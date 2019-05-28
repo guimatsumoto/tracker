@@ -50,6 +50,7 @@ class Detector {
         std::vector<tracker::PeoplePose> emulateTracker(std::vector<Eigen::Vector4f> &people);
         const float MAX_DISTANCE_CENTER = 1.5;
         const float MAX_DISTANCE_LIMB = 1;
+        void closeGlut();
 
 		// Camera Intrinsics
 		float fx, fy, cx, cy;
@@ -83,6 +84,8 @@ class Detector {
     	double sec_remain_new = 1.2; //1.2 0.8
     	int detections_to_validate = 3; //3
     	double voxel_size = 0.06; //0.06
+
+        std::vector<tracker::PeoplePose> pose_vector;
 
 		// Vai ser apenas um vetor de float, cabe ao programa separar pessoas
 		// Cada pessoa tem 25 keypoints (x, y, z, c), c = 2D confidence

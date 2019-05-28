@@ -39,11 +39,13 @@ find_package(Eigen3 REQUIRED)
 # Package includes
 include_directories(${GLEW_INCLUDE_DIRS})
 include_directories(${GLUT_INCLUDE_DIRS})
+include_directories(${GLUT_INCLUDE_DIR})
 include_directories(${CUDA_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIRS})
 
 link_directories(${GLEW_LIBRARY_DIRS})
-link_directories(${GLUT_LIBRARY_DIRS})
+#link_directories(${GLUT_LIBRARY_DIRS})
+link_directories(${GLUT_LIBRARIES})
 link_directories(${OpenGL_LIBRARY_DIRS})
 link_directories(${OpenCV_LIBRARY_DIRS})
 link_directories(${CUDA_LIBRARY_DIRS})
@@ -55,6 +57,7 @@ add_executable(tracker ${TRACKER_HDR} ${TRACKER_SRC_FILES})
 
 target_link_libraries(tracker stdc++fs
                     ${GLUT_LIBRARY}
+                    ${GLUT_glut_LIBRARY}
 				    ${GLEW_LIBRARY}
                     ${SPECIAL_OS_LIBS}
 				    ${OpenCV_LIBRARIES}

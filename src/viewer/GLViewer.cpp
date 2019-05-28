@@ -609,6 +609,7 @@ GLViewer::~GLViewer() {
 }
 
 void GLViewer::exit() {
+    printf("GLViewer::exit()\n");
     if (initialized_) {
         ended_ = true;
         glutLeaveMainLoop();
@@ -657,7 +658,10 @@ void GLViewer::initialize() {
     shader_people = Shader(VERTEX_SHADER_CLR, FRAGMENT_SHADER);
     shader_pc = Shader(VERTEX_SHADER_CLR, FRAGMENT_SHADER_PC);
 
+    printf("base shader program ID: %d\n", shader_.getProgramId());
+
     shMVPMatrixLoc_ = glGetUniformLocation(shader_.getProgramId(), "u_mvpMatrix");
+    printf("glGetUniformLocation from base shader: %d\n", (int)shMVPMatrixLoc_);
     shMVPMatrixLoc_pc = glGetUniformLocation(shader_pc.getProgramId(), "u_mvpMatrix");
     shMVPMatrixLoc_people = glGetUniformLocation(shader_people.getProgramId(), "u_mvpMatrix");
     shColorLoc_ = glGetUniformLocation(shader_.getProgramId(), "u_color");
@@ -706,12 +710,15 @@ void GLViewer::initialize() {
 
     initialized_ = true;
     ended_ = false;
+    printf("Finished GLViewer initialization\n");
 }
 
 void GLViewer::update(PeoplesObject &people) {
+    //printf("Entrou no GLViewer::update()\n");
     mtx_people.lock();
     peopleObj.cpy(people);
     mtx_people.unlock();
+    //printf("Saiu do GLViewer::update()\n");
 }
 
 void GLViewer::update(PointObject &pc_) {
@@ -721,6 +728,7 @@ void GLViewer::update(PointObject &pc_) {
 }
 
 void GLViewer::render() {
+    printf("render()\n");
     if (!ended_) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -742,6 +750,7 @@ bool GLViewer::isInitialized() {
 }
 
 void GLViewer::update() {
+    printf("GLViewer::update()\n");
     if (keyStates_['q'] == KEY_STATE::UP || keyStates_['Q'] == KEY_STATE::UP || keyStates_[27] == KEY_STATE::UP) {
         currentInstance_->exit();
         return;
@@ -822,6 +831,7 @@ void GLViewer::loadTexture() {
 }
 
 void GLViewer::draw() {
+    printf("GLViewer::draw()\n");
     const Eigen::Affine3f vpMatrix = camera_.getViewProjectionMatrix();
 
     // Simple 3D shader for simple 3D objects
@@ -864,10 +874,12 @@ void GLViewer::clearInputs() {
 }
 
 void GLViewer::drawCallback() {
+    printf("drawCallbak()\n");
     currentInstance_->render();
 }
 
 void GLViewer::mouseButtonCallback(int button, int state, int x, int y) {
+    printf("mouseButtonCallback\n");
     if (button < 5) {
         if (button < 3) {
             currentInstance_->mouseButton_[button] = state == GLUT_DOWN;
@@ -882,6 +894,7 @@ void GLViewer::mouseButtonCallback(int button, int state, int x, int y) {
 }
 
 void GLViewer::mouseMotionCallback(int x, int y) {
+    printf("mouseMotionCallback\n");
     currentInstance_->mouseMotion_[0] = x - currentInstance_->previousMouseMotion_[0];
     currentInstance_->mouseMotion_[1] = y - currentInstance_->previousMouseMotion_[1];
     currentInstance_->previousMouseMotion_[0] = x;
@@ -890,21 +903,25 @@ void GLViewer::mouseMotionCallback(int x, int y) {
 }
 
 void GLViewer::reshapeCallback(int width, int height) {
+    printf("reshapeCallback\n");
     glViewport(0, 0, width, height);
     float hfov = currentInstance_->camera_.getHorizontalFOV();
     currentInstance_->camera_.setProjection(hfov, hfov * (float) height / (float) width, currentInstance_->camera_.getZNear(), currentInstance_->camera_.getZFar());
 }
 
 void GLViewer::keyPressedCallback(unsigned char c, int x, int y) {
+    printf("keyPressedCallback\n");
     currentInstance_->keyStates_[c] = KEY_STATE::DOWN;
     glutPostRedisplay();
 }
 
 void GLViewer::keyReleasedCallback(unsigned char c, int x, int y) {
+    printf("keyReleasedCallback\n");
     currentInstance_->keyStates_[c] = KEY_STATE::UP;
 }
 
 void GLViewer::idle() {
+    printf("glutPoseRedisplay\n");
     glutPostRedisplay();
 }
 
@@ -941,6 +958,7 @@ Shader::Shader(GLchar* vs, GLchar* fs) {
         delete[] error;
         glDeleteProgram(programId_);
     }
+    printf("Created Shader\n");
 }
 
 Shader::~Shader() {
@@ -957,6 +975,7 @@ GLuint Shader::getProgramId() {
 }
 
 bool Shader::compile(GLuint &shaderId, GLenum type, GLchar* src) {
+    printf("GLShader::compile()\n");
     shaderId = glCreateShader(type);
     if (shaderId == 0) {
         std::cout << "ERROR: shader type (" << type << ") does not exist" << std::endl;
@@ -998,6 +1017,7 @@ CameraGL::CameraGL(Eigen::Vector3f position, Eigen::Vector3f direction, Eigen::V
     updateView();
     setProjection(60, 60, 0.01f, 100.f);
     updateVPMatrix();
+    printf("CameraGL::CameraGL()\n");
 }
 
 CameraGL::~CameraGL() {
@@ -1005,6 +1025,7 @@ CameraGL::~CameraGL() {
 }
 
 void CameraGL::update() {
+    printf("CameraGL::update()\n");
     if (vertical_.dot(up_) < 0)
         vertical_ = vertical_ * -1;
     updateView();
@@ -1012,6 +1033,7 @@ void CameraGL::update() {
 }
 
 void CameraGL::setProjection(float horizontalFOV, float verticalFOV, float znear, float zfar) {
+    printf("CameraGL::setProjection()\n");
     horizontalFieldOfView_ = horizontalFOV;
     verticalFieldOfView_ = verticalFOV;
     znear_ = znear;
@@ -1050,6 +1072,7 @@ const Eigen::Vector3f& CameraGL::getOffsetFromPosition() const {
 }
 
 void CameraGL::setDirection(const Eigen::Vector3f& direction, const Eigen::Vector3f& vertical) {
+    printf("CameraGL::setDirection()\n");
     Eigen::Vector3f dirNormalized = direction;
     dirNormalized.normalize();
     //this->rotation_ = orientation_mat(ORIGINAL_FORWARD, dirNormalized * -1.f);
@@ -1120,12 +1143,14 @@ float CameraGL::getZFar() const {
 }
 
 void CameraGL::updateVectors() {
+    printf("CameraGL::updateViews()\n");
     forward_ = rotation_._transformVector(ORIGINAL_FORWARD);
     up_ = rotation_._transformVector(ORIGINAL_UP);
     right_ = rotation_._transformVector(Eigen::Vector3f(ORIGINAL_RIGHT * -1));
 }
 
 void CameraGL::updateView() {
+    printf("CameraGL::updateView()\n");
     Eigen::Affine3f transformation(Eigen::Affine3f::Identity());
     // Extract rotation from class rotation_ obejct
     Eigen::Quaternionf quat(rotation_);
@@ -1142,5 +1167,6 @@ void CameraGL::updateView() {
 }
 
 void CameraGL::updateVPMatrix() {
+    printf("CameraGL::updateVPMatrix()\n");
     vpMatrix_ = projection_ * view_;
 }

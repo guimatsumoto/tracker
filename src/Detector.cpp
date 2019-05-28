@@ -38,8 +38,11 @@ void Detector::setRenderOptions(bool render_rgb, bool render_depth, bool render_
 
 void Detector::trackOnDetections(){
 	// Activate 3d pose viewer if flag is true
-	if (render_3d_poses)
+	if (render_3d_poses){
 		viewer.init();
+        glutCloseFunc(closeGlut);
+        glutMainLoop();
+    }
 	int current_frame = 0;
 	while (current_frame <= number_of_frames){
 
@@ -54,6 +57,12 @@ void Detector::trackOnDetections(){
 
 		// extract depth
 		depth_keypoints = estimate_keypoints_depth(image_keypoints);
+
+        // track
+        pose_vector = emulateTracker(depth_keypoints);
+
+        // prepare opengl structure to show 3d poses
+        fill_people_object_for_opengl(pose_vector);
 
 		// test depth
 #if 0
@@ -101,8 +110,6 @@ void Detector::trackOnDetections(){
 	std::cout << "Track on detection finished." << std::endl;
 
 	// Close everything, clear space
-	if (render_3d_poses)
-		viewer.exit();
 }
 
 std::vector<Eigen::Vector4f> Detector::estimate_keypoints_depth(std::vector<Eigen::Vector3f> pose_keypoints){
@@ -195,3 +202,6 @@ std::vector<tracker::PeoplePose> Detector::emulateTracker(std::vector<Eigen::Vec
     return ogl_people;
 }
 
+void Detector::closeGlut(){
+    viewer.exit();
+}

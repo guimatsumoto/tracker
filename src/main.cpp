@@ -1,4 +1,7 @@
 #include "Detector.hpp"
+#include "viewer/GLViewer.hpp"
+#include "stream/RGBDStream.hpp"
+#include "stream/DetectionStream.hpp"
 
 // Definition of depth camera intrinsics for depth extraction
 #define KTP_CAMERA_INTRINSICS_FX 525.0
@@ -35,6 +38,10 @@ int main(){
 				MENSA_CAMERA_INTRINSICS_CY);
 #endif
 
+//    GLViewer viewer;
+//    viewer.init();
+
+    
 
 	det.trackOnDetections();
 
