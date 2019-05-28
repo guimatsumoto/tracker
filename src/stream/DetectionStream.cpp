@@ -18,11 +18,11 @@ int DetectionStream::get_num_frames(){
 	return detection_files.size();
 }
 
-std::vector<float3> DetectionStream::get_next_detection(){
+std::vector<Eigen::Vector3f> DetectionStream::get_next_detection(){
 	FILE *fp;
 	long lSize;
 	char *buffer;
-	std::vector<float3> detected_poses;
+	std::vector<Eigen::Vector3f> detected_poses;
 	try{
 		// Reading the whole json into memory
 		fp = fopen(detection_files[frame_number].c_str(), "rb");
@@ -40,10 +40,9 @@ std::vector<float3> DetectionStream::get_next_detection(){
 		d.Parse(buffer);
 		for (unsigned i = 0; i < d["people"].Size(); i++){
 			for (unsigned j = 0; j < tracker::PoseJoints::SIZE; j++){
-				float3 keypoint;
-				keypoint.x = static_cast<float>(d["people"][i]["pose_keypoints_2d"][3*j].GetDouble());
-				keypoint.y = static_cast<float>(d["people"][i]["pose_keypoints_2d"][3*j+1].GetDouble());
-				keypoint.c = static_cast<float>(d["people"][i]["pose_keypoints_2d"][3*j+2].GetDouble());
+				Eigen::Vector3f keypoint(static_cast<float>(d["people"][i]["pose_keypoints_2d"][3*j].GetDouble()),
+                                         static_cast<float>(d["people"][i]["pose_keypoints_2d"][3*j+1].GetDouble()),
+                                         static_cast<float>(d["people"][i]["pose_keypoints_2d"][3*j+2].GetDouble()));
 
 				detected_poses.push_back(keypoint);
 			}

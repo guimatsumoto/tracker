@@ -25,7 +25,7 @@ class DetectionStream {
 
 		int get_num_frames();
 
-		std::vector<float3> get_next_detection();
+		std::vector<Eigen::Vector3f> get_next_detection();
 
 		void test();
 	private:

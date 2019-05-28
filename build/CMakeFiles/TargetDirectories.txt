@@ -1,3 +1,0 @@
-/home/gkmatsumoto/tcc/tracker/build/CMakeFiles/rebuild_cache.dir
-/home/gkmatsumoto/tcc/tracker/build/CMakeFiles/main.dir
-/home/gkmatsumoto/tcc/tracker/build/CMakeFiles/edit_cache.dir

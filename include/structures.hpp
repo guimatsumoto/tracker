@@ -1,40 +1,83 @@
 #ifndef STRUCT_H
 #define STRUCT_H
 
-struct float3{
-	float x;
-	float y;
-	float c;
-};
+#include <Eigen/Dense>
 
-struct float4{
-	float x;
-	float y;
-	float z;
-	float c;
-};
+#include <random>
 
-// This will be the final output structure, after tracking is done
-struct TrackedPoseOutput {
-	unsigned int id;
+namespace {
+std::random_device rd;
+std::mt19937 e2(rd());
+std::uniform_real_distribution<> dist(0.1, 1);
+std::vector<Eigen::Vector3f> color_vect;
+}
 
-	uint64_t ts;
+inline Eigen::Vector3f generateColor(int idx = -1){
+    if (idx < 0)
+        return Eigen::Vector3f(dist(e2), dist(e2), dist(e2));
+    else{
+        while (color_vect.size() <= idx) color_vect.emplace_back(dist(e2), dist(e2), dist(e2));
+        return color_vect.at(idx);
+    }
+}
 
-	float3 barycenter;
+namespace tracker{
+/*
+	typedef struct float2{
+		float x;
+		float y;
+	} float2;
 
-	std::vector<int> keypoints_links;
-	int keypoint_number;
+	typedef struct float3{
+		float x;
+		float y;
+		float c;
+        //float3(float x_, float y_, float c_): x(x_), y(y_), c(c_){}
+	} float3;
 
-	std::vector<float3> keypoints_2d;
-	int keypoints_2d_number = 0;
+	typedef struct float4{
+		float x;
+		float y;
+		float z;
+		float c;
+	} float4;
+*/
+	typedef struct uint2{
+		unsigned i;
+		unsigned j;
+	} uint2;
 
-	float3 speed;
+	typedef struct uint3{
+		unsigned i;
+		unsigned j;
+		unsigned k;
+	} uint3;
 
-	std::vector<int> img_position;
-	std::vector<int> world_bbox_links;
+	// This will be the final output structure, after tracking is done
+	typedef struct PeoplePose {
+		unsigned int id;
 
-	float3 gaze_direction;
-	float3 body_orientation;
-};
+		uint64_t ts;
+
+		Eigen::Vector3f barycenter;
+
+		std::vector<int> keypoints_links;
+		int keypoint_number;
+
+		std::vector<Eigen::Vector3f> keypoints_2d;
+		int keypoints_2d_number = 0;
+
+        std::vector<Eigen::Vector4f> keypoints_3d;
+
+		Eigen::Vector3f speed;
+
+		std::vector<int> img_position;
+		std::vector<int> world_bbox_links;
+
+		Eigen::Vector3f gaze_direction;
+		Eigen::Vector3f body_orientation;
+	} TrackedPoseOutput;;
+
+}
 
 #endif // STRUCT_H
