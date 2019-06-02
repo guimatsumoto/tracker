@@ -23,6 +23,9 @@ class RGBDStream {
 		cv::Mat get_next_depth_image();
 
 		void test();
+
+        bool has_more_rgb_images();
+        bool has_more_depth_images();
 	private:
 		int rgb_frame_number = 0;
 		int depth_frame_number = 0;

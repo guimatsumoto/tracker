@@ -28,6 +28,7 @@ class DetectionStream {
 		std::vector<Eigen::Vector3f> get_next_detection();
 
 		void test();
+        bool has_more_detections();
 	private:
 		int frame_number = 0;
 

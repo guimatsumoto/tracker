@@ -76,7 +76,7 @@ public:
     ~MeshObject();
     Eigen::Vector3f clr;
 
-    void updateMesh(std::vector<Eigen::Vector3f> &vert, std::vector<tracker::uint3> &tri, GLenum type);
+    void updateMesh(std::vector<tracker::float3> &vert, std::vector<tracker::uint3> &tri, GLenum type);
     void draw();
 };
 
@@ -85,8 +85,8 @@ class PeoplesObject {
     GLuint vboID_[3];
     int current_fc;
     std::mutex mtx;
-    std::vector<Eigen::Vector3f> vert;
-    std::vector<Eigen::Vector3f> clr;
+    std::vector<tracker::float3> vert;
+    std::vector<tracker::float3> clr;
     std::vector<unsigned int> m_indices_;
     bool update;
 public:
@@ -116,7 +116,7 @@ public:
 		return vert.size();
 	}
 
-    void setVert(std::vector<Eigen::Vector3f> &vertices, std::vector<Eigen::Vector3f> &clr);
+    void setVert(std::vector<tracker::float3> &vertices, std::vector<tracker::float3> &clr);
 
     void draw();
 };
@@ -126,13 +126,15 @@ class LineObject {
     GLuint vboID_[2];
     int current_fc;
     std::mutex mtx;
-    std::vector<Eigen::Vector3f> vert;
+    //std::vector<Eigen::Vector3f> vert;
+    std::vector<tracker::float3> vert;
     std::vector<unsigned int> m_indices_;
     bool update;
 public:
     LineObject();
     ~LineObject();
     Eigen::Vector3f clr;
+    //tracker::float3 clr;
 
     void updateMesh();
 
@@ -144,7 +146,8 @@ public:
     }
 
 
-    void setVert(std::vector<Eigen::Vector3f> &vertices);
+    //void setVert(std::vector<Eigen::Vector3f> &vertices);
+    void setVert(std::vector<tracker::float3> &vertices);
 
     void draw();
 };
@@ -157,8 +160,8 @@ class PointObject {
     GLuint vboID_[3];
     int current_fc;
     std::mutex mtx;
-    std::vector<Eigen::Vector3f> vert;
-    std::vector<Eigen::Vector3f> clr;
+    std::vector<tracker::float3> vert;
+    std::vector<tracker::float3> clr;
     std::vector<unsigned int> m_indices_;
     bool update;
 public:
@@ -176,7 +179,7 @@ public:
         mtx.unlock();
     }
 
-    void setVert(std::vector<Eigen::Vector3f> &pts, std::vector<Eigen::Vector3f> &clr);
+    void setVert(std::vector<tracker::float3> &pts, std::vector<tracker::float3> &clr);
 
     void draw();
 };
@@ -208,7 +211,7 @@ public:
     MeshTextureObject();
     ~MeshTextureObject();
 
-    void loadData(std::vector<Eigen::Vector3f> &vert, std::vector<Eigen::Vector2f> &uv, std::vector<tracker::uint3> &tri);
+    void loadData(std::vector<tracker::float3> &vert, std::vector<tracker::float2> &uv, std::vector<tracker::uint3> &tri);
 
     void draw();
 

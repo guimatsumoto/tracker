@@ -4,25 +4,26 @@
 #include <Eigen/Dense>
 
 #include <random>
-
+/*
 namespace {
 std::random_device rd;
 std::mt19937 e2(rd());
 std::uniform_real_distribution<> dist(0.1, 1);
-std::vector<Eigen::Vector3f> color_vect;
+std::vector<tracker::float3> color_vect;
 }
 
-inline Eigen::Vector3f generateColor(int idx = -1){
+inline tracker::float3 generateColor(int idx = -1){
     if (idx < 0)
-        return Eigen::Vector3f(dist(e2), dist(e2), dist(e2));
+        return tracker::float3{dist(e2), dist(e2), dist(e2)};
     else{
-        while (color_vect.size() <= idx) color_vect.emplace_back(dist(e2), dist(e2), dist(e2));
+        while (color_vect.size() <= idx) color_vect.emplace_back(tracker::float3{dist(e2), dist(e2), dist(e2)});
         return color_vect.at(idx);
     }
 }
+*/
 
 namespace tracker{
-/*
+
 	typedef struct float2{
 		float x;
 		float y;
@@ -32,7 +33,6 @@ namespace tracker{
 		float x;
 		float y;
 		float c;
-        //float3(float x_, float y_, float c_): x(x_), y(y_), c(c_){}
 	} float3;
 
 	typedef struct float4{
@@ -41,7 +41,7 @@ namespace tracker{
 		float z;
 		float c;
 	} float4;
-*/
+
 	typedef struct uint2{
 		unsigned i;
 		unsigned j;
@@ -78,6 +78,22 @@ namespace tracker{
 		Eigen::Vector3f body_orientation;
 	} TrackedPoseOutput;;
 
+}
+
+namespace {
+std::random_device rd;
+std::mt19937 e2(rd());
+std::uniform_real_distribution<> dist(0.1, 1);
+std::vector<tracker::float3> color_vect;
+}
+
+inline tracker::float3 generateColor(int idx = -1){
+    if (idx < 0)
+        return tracker::float3{1., 0, 0};
+    else{
+        while (color_vect.size() <= idx) color_vect.emplace_back(tracker::float3{(float)dist(e2), (float)dist(e2), (float)dist(e2)});
+        return color_vect.at(idx);
+    }
 }
 
 #endif // STRUCT_H

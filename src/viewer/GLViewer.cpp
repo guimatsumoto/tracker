@@ -98,7 +98,8 @@ GLObject::GLObject(Eigen::Vector3f position, bool isStatic) : isStatic_(isStatic
     vaoID_ = 0;
     drawingType_ = GL_TRIANGLES;
     position_ = position;
-    rotation_ = Eigen::Quaternionf(1, 0, 0, 0);
+    rotation_ = Eigen::Quaternionf();
+    rotation_.setIdentity();
 }
 
 GLObject::~GLObject() {
@@ -196,8 +197,8 @@ const Eigen::Vector3f& GLObject::getPosition() const {
 Eigen::Affine3f GLObject::getModelMatrix() const {
     Eigen::Affine3f m(Eigen::Affine3f::Identity());
     Eigen::Quaternionf quat(rotation_);
+    quat.normalize();
     Eigen::Matrix3f associated_rotation = quat.toRotationMatrix();
-    associated_rotation.normalize();
     m.rotate(associated_rotation);
     m.translate(position_);
     return m;
@@ -214,7 +215,7 @@ MeshObject::~MeshObject() {
         glDeleteBuffers(2, vboID_);
 }
 
-void MeshObject::updateMesh(std::vector<Eigen::Vector3f> &vert, std::vector<tracker::uint3> &tri, GLenum type) {
+void MeshObject::updateMesh(std::vector<tracker::float3> &vert, std::vector<tracker::uint3> &tri, GLenum type) {
     if (vaoID_ == 0) {
         glGenVertexArrays(1, &vaoID_);
         glGenBuffers(2, vboID_);
@@ -223,7 +224,7 @@ void MeshObject::updateMesh(std::vector<Eigen::Vector3f> &vert, std::vector<trac
     glBindVertexArray(vaoID_);
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID_[0]);
-    glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (Eigen::Vector3f), &vert[0], GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (tracker::float3), vert.data(), GL_DYNAMIC_DRAW);
     glVertexAttribPointer(Shader::ATTRIB_VERTICES_POS, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(Shader::ATTRIB_VERTICES_POS);
 
@@ -257,7 +258,7 @@ PeoplesObject::~PeoplesObject() {
         glDeleteBuffers(3, vboID_);
 }
 
-void PeoplesObject::setVert(std::vector<Eigen::Vector3f> &vertices, std::vector<Eigen::Vector3f> &clr) {
+void PeoplesObject::setVert(std::vector<tracker::float3> &vertices, std::vector<tracker::float3> &clr) {
     mtx.lock();
     vert = vertices;
     this->clr = clr;
@@ -283,12 +284,13 @@ void PeoplesObject::updateMesh() {
         glBindVertexArray(vaoID_);
 
         glBindBuffer(GL_ARRAY_BUFFER, vboID_[0]);
-        glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (Eigen::Vector3f), &vert[0], GL_DYNAMIC_DRAW);
+        //glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (tracker::float3), &vert[0], GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (tracker::float3), vert.data(), GL_DYNAMIC_DRAW);
         glVertexAttribPointer(Shader::ATTRIB_VERTICES_POS, 3, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(Shader::ATTRIB_VERTICES_POS);
 
         glBindBuffer(GL_ARRAY_BUFFER, vboID_[1]);
-        glBufferData(GL_ARRAY_BUFFER, clr.size() * sizeof (Eigen::Vector3f), &clr[0], GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, clr.size() * sizeof (tracker::float3), clr.data(), GL_DYNAMIC_DRAW);
         glVertexAttribPointer(Shader::ATTRIB_COLOR_POS, 3, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(Shader::ATTRIB_COLOR_POS);
 
@@ -327,7 +329,8 @@ LineObject::~LineObject() {
         glDeleteBuffers(2, vboID_);
 }
 
-void LineObject::setVert(std::vector<Eigen::Vector3f> &vertices) {
+//void LineObject::setVert(std::vector<Eigen::Vector3f> &vertices) {
+void LineObject::setVert(std::vector<tracker::float3> &vertices){
     mtx.lock();
     vert = vertices;
 
@@ -351,7 +354,8 @@ void LineObject::updateMesh() {
         glBindVertexArray(vaoID_);
 
         glBindBuffer(GL_ARRAY_BUFFER, vboID_[0]);
-        glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (Eigen::Vector3f), &vert[0], GL_DYNAMIC_DRAW);
+        //glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (tracker::float3), &vert[0], GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (tracker::float3), vert.data(), GL_DYNAMIC_DRAW);
         glVertexAttribPointer(Shader::ATTRIB_VERTICES_POS, 3, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(Shader::ATTRIB_VERTICES_POS);
 
@@ -392,7 +396,7 @@ PointObject::~PointObject() {
         glDeleteBuffers(3, vboID_);
 }
 
-void PointObject::setVert(std::vector<Eigen::Vector3f> &pts, std::vector<Eigen::Vector3f> &clr_) {
+void PointObject::setVert(std::vector<tracker::float3> &pts, std::vector<tracker::float3> &clr_) {
     mtx.lock();
 
     vert = pts;
@@ -420,12 +424,12 @@ void PointObject::updateMesh() {
         glBindVertexArray(vaoID_);
 
         glBindBuffer(GL_ARRAY_BUFFER, vboID_[0]);
-        glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (Eigen::Vector3f), &vert[0], GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (tracker::float3), vert.data(), GL_DYNAMIC_DRAW);
         glVertexAttribPointer(Shader::ATTRIB_VERTICES_POS, 3, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(Shader::ATTRIB_VERTICES_POS);
 
         glBindBuffer(GL_ARRAY_BUFFER, vboID_[1]);
-        glBufferData(GL_ARRAY_BUFFER, clr.size() * sizeof (Eigen::Vector3f), &clr[0], GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, clr.size() * sizeof (tracker::float3), clr.data(), GL_DYNAMIC_DRAW);
         glVertexAttribPointer(Shader::ATTRIB_COLOR_POS, 3, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(Shader::ATTRIB_COLOR_POS);
 
@@ -469,7 +473,7 @@ inline Eigen::Vector3f applyRot(Eigen::Vector3f &pt, Eigen::Affine3f &rot) {
     // Extract rotation
     Eigen::Matrix3f associated_rotation = rot.rotation();
     tmp[0] = pt[0] * rot(0,0) + pt[1] * rot(0,1) + pt[2] * rot(0,2);
-    tmp[1] = pt[0] * rot(1,0) + pt[1] * rot(1,2) + pt[2] * rot(1,2);
+    tmp[1] = pt[0] * rot(1,0) + pt[1] * rot(1,1) + pt[2] * rot(1,2);
     tmp[2] = pt[0] * rot(2,0) + pt[1] * rot(2,1) + pt[2] * rot(2,2);
     return tmp;
 }
@@ -538,7 +542,7 @@ MeshTextureObject::~MeshTextureObject() {
     current_fc = 0;
 }
 
-void MeshTextureObject::loadData(std::vector<Eigen::Vector3f> &vert, std::vector<Eigen::Vector2f> &uv, std::vector<tracker::uint3> &tri) {
+void MeshTextureObject::loadData(std::vector<tracker::float3> &vert, std::vector<tracker::float2> &uv, std::vector<tracker::uint3> &tri) {
     if (vaoID_ == 0) {
         glGenVertexArrays(1, &vaoID_);
         glGenBuffers(3, vboID_);
@@ -547,17 +551,17 @@ void MeshTextureObject::loadData(std::vector<Eigen::Vector3f> &vert, std::vector
     glBindVertexArray(vaoID_);
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID_[0]);
-    glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (Eigen::Vector3f), &vert[0], GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vert.size() * sizeof (tracker::float3), vert.data(), GL_DYNAMIC_DRAW);
     glVertexAttribPointer(Shader::ATTRIB_VERTICES_POS, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(Shader::ATTRIB_VERTICES_POS);
 
     glBindBuffer(GL_ARRAY_BUFFER, vboID_[1]);
-    glBufferData(GL_ARRAY_BUFFER, uv.size() * sizeof (Eigen::Vector2f), &uv[0], GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, uv.size() * sizeof (tracker::float2), uv.data(), GL_DYNAMIC_DRAW);
     glVertexAttribPointer(Shader::ATTRIB_COLOR_POS, 2, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(Shader::ATTRIB_COLOR_POS);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboID_[2]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri.size() * sizeof (tracker::uint3), &tri[0], GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri.size() * sizeof (tracker::uint3), tri.data(), GL_DYNAMIC_DRAW);
 
     current_fc = tri.size() * 3;
 
@@ -609,13 +613,13 @@ GLViewer::~GLViewer() {
 }
 
 void GLViewer::exit() {
-    printf("GLViewer::exit()\n");
+    //printf("GLViewer::exit()\n");
     if (initialized_) {
         ended_ = true;
         glutLeaveMainLoop();
-	// Kill CUDA talvez precisara manter...
-	//cuCtxDestroy(ctx);
-	cuDevicePrimaryCtxRelease(0);
+	    // Kill CUDA talvez precisara manter...
+	    //cuCtxDestroy(ctx);
+	    cuDevicePrimaryCtxRelease(0);
     }
 }
 
@@ -626,8 +630,6 @@ bool GLViewer::isEnded() {
 void GLViewer::init(bool useTexture) {
     useTexture_ = useTexture;
     res = Eigen::Vector2i(1280, 720);
-    //get current CUDA context (created by the ZED) for CUDA - OpenGL interoperability
-    unsigned flags;
     cuDevicePrimaryCtxRetain(&ctx, 0);
     //cuCtxGetCurrent(&ctx);
     initialize();
@@ -658,10 +660,10 @@ void GLViewer::initialize() {
     shader_people = Shader(VERTEX_SHADER_CLR, FRAGMENT_SHADER);
     shader_pc = Shader(VERTEX_SHADER_CLR, FRAGMENT_SHADER_PC);
 
-    printf("base shader program ID: %d\n", shader_.getProgramId());
+    //printf("base shader program ID: %d\n", shader_.getProgramId());
 
     shMVPMatrixLoc_ = glGetUniformLocation(shader_.getProgramId(), "u_mvpMatrix");
-    printf("glGetUniformLocation from base shader: %d\n", (int)shMVPMatrixLoc_);
+    //printf("glGetUniformLocation from base shader: %d\n", (int)shMVPMatrixLoc_);
     shMVPMatrixLoc_pc = glGetUniformLocation(shader_pc.getProgramId(), "u_mvpMatrix");
     shMVPMatrixLoc_people = glGetUniformLocation(shader_people.getProgramId(), "u_mvpMatrix");
     shColorLoc_ = glGetUniformLocation(shader_.getProgramId(), "u_color");
@@ -675,7 +677,9 @@ void GLViewer::initialize() {
     Eigen::AngleAxisf xangle(M_PI, Eigen::Vector3f::UnitX());
     Eigen::AngleAxisf yangle(0, Eigen::Vector3f::UnitY());
     Eigen::AngleAxisf zangle(0, Eigen::Vector3f::UnitZ());
-    Eigen::Quaternion<float> q = zangle * yangle * xangle;
+    //Eigen::Matrix3f m = zangle * yangle * xangle;
+    //Eigen::Quaternionf q(m);
+    Eigen::Quaternion<float> q = xangle * yangle * zangle;
     //cam_rot = q.matrix();
 
     camera_.setRotation(q);
@@ -688,29 +692,40 @@ void GLViewer::initialize() {
     glutKeyboardFunc(GLViewer::keyPressedCallback);
     glutKeyboardUpFunc(GLViewer::keyReleasedCallback);
 
-    std::vector<Eigen::Vector3f> grillvec;
-    float span = 20.f;
+    //std::vector<Eigen::Vector3f> grillvec;
+    std::vector<tracker::float3> grillvec;
+    float span = 4.f;
     for (int i = (int) -span; i <= (int) span; i++) {
-        grillvec.emplace_back();
-        grillvec.back() = Eigen::Vector3f((float)i, .0, (float)-span);
+        //grillvec.emplace_back();
+        //grillvec.back() = Eigen::Vector3f((float)i, .0, (float)-span);
+        //grillvec.back() = tracker::float3{(float)i, .0, (float)-span};
+        grillvec.push_back(tracker::float3{(float)i, .0, (float)-span});
 
-        grillvec.emplace_back();
-        grillvec.back() = Eigen::Vector3f((float)i, .0, (float)span);
+        //grillvec.emplace_back();
+        //grillvec.back() = Eigen::Vector3f((float)i, .0, (float)span);
+        //grillvec.back() = tracker::float3{(float)i, .0, (float)span};
+        grillvec.push_back(tracker::float3{(float)i, .0, (float)span});
 
-        grillvec.emplace_back();
-        grillvec.back() = Eigen::Vector3f((float)-span, .0, (float)i);
+        //grillvec.emplace_back();
+        //grillvec.back() = Eigen::Vector3f((float)-span, .0, (float)i);
+        //grillvec.back() = tracker::float3{(float)-span, .0, (float)i};
+        grillvec.push_back(tracker::float3{(float)-span, .0, (float)i});
 
-        grillvec.emplace_back();
-        grillvec.back() = Eigen::Vector3f((float)span, .0, (float)i);
+        //grillvec.emplace_back();
+        //grillvec.back() = Eigen::Vector3f((float)span, .0, (float)i);
+        //grillvec.back() = tracker::float3{(float)span, .0, (float)i};
+        grillvec.push_back(tracker::float3{(float)span, .0, (float)i});
     }
 
-    grill.clr = Eigen::Vector3f(0.33, 0.33, 0.33);
+    grill.clr = Eigen::Vector3f(.33, .33, .33);
+    //tracker::float3 color = {.33, .33, .33};
+    //grill.clr = color;
     grill.setVert(grillvec);
     grill.updateMesh();
 
     initialized_ = true;
     ended_ = false;
-    printf("Finished GLViewer initialization\n");
+    //printf("Finished GLViewer initialization\n");
 }
 
 void GLViewer::update(PeoplesObject &people) {
@@ -728,7 +743,7 @@ void GLViewer::update(PointObject &pc_) {
 }
 
 void GLViewer::render() {
-    printf("render()\n");
+    //printf("render()\n");
     if (!ended_) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -750,7 +765,7 @@ bool GLViewer::isInitialized() {
 }
 
 void GLViewer::update() {
-    printf("GLViewer::update()\n");
+    //printf("GLViewer::update()\n");
     if (keyStates_['q'] == KEY_STATE::UP || keyStates_['Q'] == KEY_STATE::UP || keyStates_[27] == KEY_STATE::UP) {
         currentInstance_->exit();
         return;
@@ -759,16 +774,16 @@ void GLViewer::update() {
     // Rotation of the camera
     if (mouseButton_[MOUSE_BUTTON::LEFT]) {
 	    // Create proper quaternion for camera rotation 1
-	    Eigen::Vector3f axis = camera_.getRight().normalized();
+	    Eigen::Vector3f axis = camera_.getRight();
 	    Eigen::AngleAxisf angle_axis(mouseMotion_[1] * MOUSE_R_SENSITIVITY, axis);
         Eigen::Quaternionf camera_rot_quat(angle_axis);
-        camera_.rotate(camera_rot_quat);
+        camera_.rotate(camera_rot_quat.normalized());
 	    // Create proper quaternion for camera rotation 2
 	    axis = camera_.getVertical() * -1;
-	    axis.normalize();
+	    //axis.normalize();
 	    angle_axis = Eigen::AngleAxisf(mouseMotion_[0] * MOUSE_R_SENSITIVITY, axis);
 	    camera_rot_quat = Eigen::Quaternionf(angle_axis);
-        camera_.rotate(camera_rot_quat);
+        camera_.rotate(camera_rot_quat.normalized());
     }
 
     // Translation of the camera on its plane
@@ -831,14 +846,15 @@ void GLViewer::loadTexture() {
 }
 
 void GLViewer::draw() {
-    printf("GLViewer::draw()\n");
+    //printf("GLViewer::draw()\n");
     const Eigen::Affine3f vpMatrix = camera_.getViewProjectionMatrix();
 
     // Simple 3D shader for simple 3D objects
     glUseProgram(shader_.getProgramId());
     // Axis
     //glUniformMatrix4fv(shMVPMatrixLoc_, 1, GL_FALSE, vpMatrix.transpose().data());
-    glUniformMatrix4fv(shMVPMatrixLoc_, 1, GL_FALSE, vpMatrix.data());
+    //glUniformMatrix4fv(shMVPMatrixLoc_, 1, GL_FALSE, vpMatrix.data());
+    glUniformMatrix4fv(shMVPMatrixLoc_, 1, GL_FALSE, vpMatrix.matrix().transpose().data());
 
     glUniform3fv(shColorLoc_, 1, camRepere.clr.data());
     camRepere.draw();
@@ -850,7 +866,8 @@ void GLViewer::draw() {
 
     glUseProgram(shader_people.getProgramId());
     //glUniformMatrix4fv(shMVPMatrixLoc_people, 1, GL_FALSE, vpMatrix.transpose().data());
-    glUniformMatrix4fv(shMVPMatrixLoc_people, 1, GL_FALSE, vpMatrix.data());
+    //glUniformMatrix4fv(shMVPMatrixLoc_people, 1, GL_FALSE, vpMatrix.data());
+    glUniformMatrix4fv(shMVPMatrixLoc_people, 1, GL_FALSE, vpMatrix.matrix().transpose().data());
     peopleObj.updateMesh();
     peopleObj.draw();
 
@@ -858,7 +875,8 @@ void GLViewer::draw() {
 
     glUseProgram(shader_pc.getProgramId());
     //glUniformMatrix4fv(shMVPMatrixLoc_pc, 1, GL_FALSE, vpMatrix.transpose().data());
-    glUniformMatrix4fv(shMVPMatrixLoc_pc, 1, GL_FALSE, vpMatrix.data());
+    //glUniformMatrix4fv(shMVPMatrixLoc_pc, 1, GL_FALSE, vpMatrix.data());
+    glUniformMatrix4fv(shMVPMatrixLoc_pc, 1, GL_FALSE, vpMatrix.matrix().transpose().data());
     pointcloudObj.updateMesh();
     pointcloudObj.draw();
     glUseProgram(0);
@@ -874,12 +892,12 @@ void GLViewer::clearInputs() {
 }
 
 void GLViewer::drawCallback() {
-    printf("drawCallbak()\n");
+    //printf("drawCallbak()\n");
     currentInstance_->render();
 }
 
 void GLViewer::mouseButtonCallback(int button, int state, int x, int y) {
-    printf("mouseButtonCallback\n");
+    //printf("mouseButtonCallback\n");
     if (button < 5) {
         if (button < 3) {
             currentInstance_->mouseButton_[button] = state == GLUT_DOWN;
@@ -894,7 +912,7 @@ void GLViewer::mouseButtonCallback(int button, int state, int x, int y) {
 }
 
 void GLViewer::mouseMotionCallback(int x, int y) {
-    printf("mouseMotionCallback\n");
+    //printf("mouseMotionCallback\n");
     currentInstance_->mouseMotion_[0] = x - currentInstance_->previousMouseMotion_[0];
     currentInstance_->mouseMotion_[1] = y - currentInstance_->previousMouseMotion_[1];
     currentInstance_->previousMouseMotion_[0] = x;
@@ -903,25 +921,25 @@ void GLViewer::mouseMotionCallback(int x, int y) {
 }
 
 void GLViewer::reshapeCallback(int width, int height) {
-    printf("reshapeCallback\n");
+    //printf("reshapeCallback\n");
     glViewport(0, 0, width, height);
     float hfov = currentInstance_->camera_.getHorizontalFOV();
     currentInstance_->camera_.setProjection(hfov, hfov * (float) height / (float) width, currentInstance_->camera_.getZNear(), currentInstance_->camera_.getZFar());
 }
 
 void GLViewer::keyPressedCallback(unsigned char c, int x, int y) {
-    printf("keyPressedCallback\n");
+    //printf("keyPressedCallback\n");
     currentInstance_->keyStates_[c] = KEY_STATE::DOWN;
     glutPostRedisplay();
 }
 
 void GLViewer::keyReleasedCallback(unsigned char c, int x, int y) {
-    printf("keyReleasedCallback\n");
+    //printf("keyReleasedCallback\n");
     currentInstance_->keyStates_[c] = KEY_STATE::UP;
 }
 
 void GLViewer::idle() {
-    printf("glutPoseRedisplay\n");
+    //printf("glutPoseRedisplay\n");
     glutPostRedisplay();
 }
 
@@ -958,7 +976,7 @@ Shader::Shader(GLchar* vs, GLchar* fs) {
         delete[] error;
         glDeleteProgram(programId_);
     }
-    printf("Created Shader\n");
+    //printf("Created Shader\n");
 }
 
 Shader::~Shader() {
@@ -975,7 +993,7 @@ GLuint Shader::getProgramId() {
 }
 
 bool Shader::compile(GLuint &shaderId, GLenum type, GLchar* src) {
-    printf("GLShader::compile()\n");
+    //printf("GLShader::compile()\n");
     shaderId = glCreateShader(type);
     if (shaderId == 0) {
         std::cout << "ERROR: shader type (" << type << ") does not exist" << std::endl;
@@ -1012,12 +1030,13 @@ CameraGL::CameraGL(Eigen::Vector3f position, Eigen::Vector3f direction, Eigen::V
     this->position_ = position;
     setDirection(direction, vertical);
 
-    offset_ = Eigen::Vector3f(0, 0, 0);
+    offset_ = Eigen::Vector3f(0, 2, 0);
     view_.setIdentity();
     updateView();
-    setProjection(60, 60, 0.01f, 100.f);
+    //setProjection(60, 60, 0.01f, 100.f);
+    setProjection(120, 120, .01f, 100.f);
     updateVPMatrix();
-    printf("CameraGL::CameraGL()\n");
+    //printf("CameraGL::CameraGL()\n");
 }
 
 CameraGL::~CameraGL() {
@@ -1025,7 +1044,7 @@ CameraGL::~CameraGL() {
 }
 
 void CameraGL::update() {
-    printf("CameraGL::update()\n");
+    //printf("CameraGL::update()\n");
     if (vertical_.dot(up_) < 0)
         vertical_ = vertical_ * -1;
     updateView();
@@ -1033,7 +1052,7 @@ void CameraGL::update() {
 }
 
 void CameraGL::setProjection(float horizontalFOV, float verticalFOV, float znear, float zfar) {
-    printf("CameraGL::setProjection()\n");
+    //printf("CameraGL::setProjection()\n");
     horizontalFieldOfView_ = horizontalFOV;
     verticalFieldOfView_ = verticalFOV;
     znear_ = znear;
@@ -1072,9 +1091,8 @@ const Eigen::Vector3f& CameraGL::getOffsetFromPosition() const {
 }
 
 void CameraGL::setDirection(const Eigen::Vector3f& direction, const Eigen::Vector3f& vertical) {
-    printf("CameraGL::setDirection()\n");
-    Eigen::Vector3f dirNormalized = direction;
-    dirNormalized.normalize();
+    //printf("CameraGL::setDirection()\n");
+    Eigen::Vector3f dirNormalized = direction.normalized();
     //this->rotation_ = orientation_mat(ORIGINAL_FORWARD, dirNormalized * -1.f);
     Eigen::Quaternionf rotation = Eigen::Quaternionf::FromTwoVectors(ORIGINAL_FORWARD, dirNormalized * -1);
     updateVectors();
@@ -1082,9 +1100,9 @@ void CameraGL::setDirection(const Eigen::Vector3f& direction, const Eigen::Vecto
     Eigen::Vector3f aux(vertical_);
     if (aux.dot(up_) < 0)
     {
-	// Create proper axis angle representation
-	Eigen::AngleAxisf axis_angle(M_PI, ORIGINAL_FORWARD.normalized());
-	rotate(Eigen::Quaternionf(axis_angle));
+	    // Create proper axis angle representation
+	    Eigen::AngleAxisf axis_angle(M_PI, ORIGINAL_FORWARD.normalized());
+	    rotate(Eigen::Quaternionf(axis_angle));
     }
 }
 
@@ -1097,7 +1115,7 @@ void CameraGL::setPosition(const Eigen::Vector3f& p) {
 }
 
 void CameraGL::rotate(const Eigen::Quaternionf& rot) {
-    rotation_ = rot * rotation_;
+    rotation_ = rot.normalized() * rotation_.normalized();
     updateVectors();
 }
 
@@ -1143,19 +1161,19 @@ float CameraGL::getZFar() const {
 }
 
 void CameraGL::updateVectors() {
-    printf("CameraGL::updateViews()\n");
+    //printf("CameraGL::updateViews()\n");
     forward_ = rotation_._transformVector(ORIGINAL_FORWARD);
     up_ = rotation_._transformVector(ORIGINAL_UP);
     right_ = rotation_._transformVector(Eigen::Vector3f(ORIGINAL_RIGHT * -1));
 }
 
 void CameraGL::updateView() {
-    printf("CameraGL::updateView()\n");
+    //printf("CameraGL::updateView()\n");
     Eigen::Affine3f transformation(Eigen::Affine3f::Identity());
-    // Extract rotation from class rotation_ obejct
+    // Extract rotation from class rotation_ object
     Eigen::Quaternionf quat(rotation_);
-    Eigen::Matrix3f associated_rotation;
-    associated_rotation.normalize();
+    quat.normalize();
+    Eigen::Matrix3f associated_rotation = quat.toRotationMatrix();
     // Apply rotation
     transformation.rotate(associated_rotation);
     // Rotate offset by rotation quat and add position translation
@@ -1167,6 +1185,6 @@ void CameraGL::updateView() {
 }
 
 void CameraGL::updateVPMatrix() {
-    printf("CameraGL::updateVPMatrix()\n");
+    //printf("CameraGL::updateVPMatrix()\n");
     vpMatrix_ = projection_ * view_;
 }
