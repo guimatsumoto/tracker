@@ -33,18 +33,28 @@ std::vector<Eigen::Vector4f> Detector::estimate_keypoints_depth(std::vector<Eige
 	float x, y, z;
 	if (pose_keypoints.size() > 1){
 		for (int i = 0; i < pose_keypoints.size(); i++){
-			// Trivial method
-			z = (float)depth_frame.at<short>((int)pose_keypoints[i](1), (int)pose_keypoints[i](0))/1000;
-			// Stephane Magnenat's method
-			//z = 0.1236*tan(depth_frame.at<short>((int)pose_keypoints[i].y, (int)pose_keypoints[i].x) / 2842.5 + 1.1863);
-			x = (pose_keypoints[i](0) - cx) * z / fx;
-			y = (pose_keypoints[i](1) - cy) * z / fy;
 			Eigen::Vector4f kp;
-			kp(0) = x;
-			kp(1) = y;
-			kp(2) = z;
-			kp(3) = pose_keypoints[i](2);
+            if ((pose_keypoints[i](0) == 0) && (pose_keypoints[i](1) == 0)){
+                kp(0) = NAN;
+                kp(1) = NAN;
+                kp(2) = NAN;
+                kp(3) = 0.f;
+            }else{
+			    // Trivial method
+			    z = (float)depth_frame.at<short>((int)pose_keypoints[i](1), (int)pose_keypoints[i](0))/1000;
+			    // Stephane Magnenat's method
+			    //z = 0.1236*tan(depth_frame.at<short>((int)pose_keypoints[i].y, (int)pose_keypoints[i].x) / 2842.5 + 1.1863);
+			    x = (pose_keypoints[i](0) - cx) * z / fx;
+			    y = (pose_keypoints[i](1) - cy) * z / fy;
+			    kp(0) = x;
+			    kp(1) = y;
+			    kp(2) = z;
+			    kp(3) = pose_keypoints[i](2);
+            }
+#if 0
+            std::cout << pose_keypoints[i](0) << " " << pose_keypoints[i](1) << " - ";
             std::cout << kp(0) << " " << kp(1) << " " << kp(2) << std::endl;
+#endif
 			depth_keypoints.push_back(kp);
 		}
 	}
@@ -68,11 +78,16 @@ std::vector<tracker::PeoplePose> Detector::emulateTracker(std::vector<Eigen::Vec
                 Eigen::Vector3f kp_pos(people[25*i+j](0),
                                        people[25*i+j](1),
                                        people[25*i+j](2));
-                barycenter += kp_pos;
-                valid_kps += 1;
+                if (isfinite(kp_pos(0))){
+                    barycenter += kp_pos;
+                    valid_kps += 1;
+                }
             }
         }
-        barycenter = barycenter / valid_kps;
+        if (valid_kps > 0)
+            barycenter = barycenter / valid_kps;
+        else
+            barycenter = Eigen::Vector3f(NAN, NAN, NAN);
         aux.barycenter = barycenter;
         ogl_people.emplace_back(aux);
     }

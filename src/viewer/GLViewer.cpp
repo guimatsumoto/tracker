@@ -653,6 +653,7 @@ void GLViewer::initialize() {
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_CLAMP);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Compile and create the shader
@@ -694,7 +695,7 @@ void GLViewer::initialize() {
 
     //std::vector<Eigen::Vector3f> grillvec;
     std::vector<tracker::float3> grillvec;
-    float span = 4.f;
+    float span = 20.f;
     for (int i = (int) -span; i <= (int) span; i++) {
         //grillvec.emplace_back();
         //grillvec.back() = Eigen::Vector3f((float)i, .0, (float)-span);
@@ -716,7 +717,6 @@ void GLViewer::initialize() {
         //grillvec.back() = tracker::float3{(float)span, .0, (float)i};
         grillvec.push_back(tracker::float3{(float)span, .0, (float)i});
     }
-
     grill.clr = Eigen::Vector3f(.33, .33, .33);
     //tracker::float3 color = {.33, .33, .33};
     //grill.clr = color;
@@ -775,15 +775,15 @@ void GLViewer::update() {
     if (mouseButton_[MOUSE_BUTTON::LEFT]) {
 	    // Create proper quaternion for camera rotation 1
 	    Eigen::Vector3f axis = camera_.getRight();
-	    Eigen::AngleAxisf angle_axis(mouseMotion_[1] * MOUSE_R_SENSITIVITY, axis);
+	    Eigen::AngleAxisf angle_axis(mouseMotion_[1] * MOUSE_R_SENSITIVITY, axis.normalized());
         Eigen::Quaternionf camera_rot_quat(angle_axis);
-        camera_.rotate(camera_rot_quat.normalized());
+        camera_.rotate(camera_rot_quat);
 	    // Create proper quaternion for camera rotation 2
 	    axis = camera_.getVertical() * -1;
 	    //axis.normalize();
-	    angle_axis = Eigen::AngleAxisf(mouseMotion_[0] * MOUSE_R_SENSITIVITY, axis);
+	    angle_axis = Eigen::AngleAxisf(mouseMotion_[0] * MOUSE_R_SENSITIVITY, axis.normalized());
 	    camera_rot_quat = Eigen::Quaternionf(angle_axis);
-        camera_.rotate(camera_rot_quat.normalized());
+        camera_.rotate(camera_rot_quat);
     }
 
     // Translation of the camera on its plane
@@ -853,8 +853,8 @@ void GLViewer::draw() {
     glUseProgram(shader_.getProgramId());
     // Axis
     //glUniformMatrix4fv(shMVPMatrixLoc_, 1, GL_FALSE, vpMatrix.transpose().data());
-    //glUniformMatrix4fv(shMVPMatrixLoc_, 1, GL_FALSE, vpMatrix.data());
-    glUniformMatrix4fv(shMVPMatrixLoc_, 1, GL_FALSE, vpMatrix.matrix().transpose().data());
+    glUniformMatrix4fv(shMVPMatrixLoc_, 1, GL_FALSE, vpMatrix.data());
+    //glUniformMatrix4fv(shMVPMatrixLoc_, 1, GL_FALSE, vpMatrix.matrix().transpose().data());
 
     glUniform3fv(shColorLoc_, 1, camRepere.clr.data());
     camRepere.draw();
@@ -866,8 +866,8 @@ void GLViewer::draw() {
 
     glUseProgram(shader_people.getProgramId());
     //glUniformMatrix4fv(shMVPMatrixLoc_people, 1, GL_FALSE, vpMatrix.transpose().data());
-    //glUniformMatrix4fv(shMVPMatrixLoc_people, 1, GL_FALSE, vpMatrix.data());
-    glUniformMatrix4fv(shMVPMatrixLoc_people, 1, GL_FALSE, vpMatrix.matrix().transpose().data());
+    glUniformMatrix4fv(shMVPMatrixLoc_people, 1, GL_FALSE, vpMatrix.data());
+    //glUniformMatrix4fv(shMVPMatrixLoc_people, 1, GL_FALSE, vpMatrix.matrix().transpose().data());
     peopleObj.updateMesh();
     peopleObj.draw();
 
@@ -875,12 +875,11 @@ void GLViewer::draw() {
 
     glUseProgram(shader_pc.getProgramId());
     //glUniformMatrix4fv(shMVPMatrixLoc_pc, 1, GL_FALSE, vpMatrix.transpose().data());
-    //glUniformMatrix4fv(shMVPMatrixLoc_pc, 1, GL_FALSE, vpMatrix.data());
-    glUniformMatrix4fv(shMVPMatrixLoc_pc, 1, GL_FALSE, vpMatrix.matrix().transpose().data());
+    glUniformMatrix4fv(shMVPMatrixLoc_pc, 1, GL_FALSE, vpMatrix.data());
+    //glUniformMatrix4fv(shMVPMatrixLoc_pc, 1, GL_FALSE, vpMatrix.matrix().transpose().data());
     pointcloudObj.updateMesh();
     pointcloudObj.draw();
     glUseProgram(0);
-
 }
 
 void GLViewer::clearInputs() {
@@ -1030,11 +1029,12 @@ CameraGL::CameraGL(Eigen::Vector3f position, Eigen::Vector3f direction, Eigen::V
     this->position_ = position;
     setDirection(direction, vertical);
 
-    offset_ = Eigen::Vector3f(0, 2, 0);
+    offset_ = Eigen::Vector3f(0, 0, 0);
     view_.setIdentity();
     updateView();
     //setProjection(60, 60, 0.01f, 100.f);
-    setProjection(120, 120, .01f, 100.f);
+    //setProjection(160, 160, .01f, 100.f);
+    setProjection(120, 120, 2.f, 100.f);
     updateVPMatrix();
     //printf("CameraGL::CameraGL()\n");
 }
@@ -1058,6 +1058,8 @@ void CameraGL::setProjection(float horizontalFOV, float verticalFOV, float znear
     znear_ = znear;
     zfar_ = zfar;
 
+    //float fov_y = verticalFOV * M_PI / 180.f;
+    //float fov_x = horizontalFOV * M_PI / 180.f;
     float fov_y = verticalFOV * M_PI / 180.f;
     float fov_x = horizontalFOV * M_PI / 180.f;
 
@@ -1115,7 +1117,7 @@ void CameraGL::setPosition(const Eigen::Vector3f& p) {
 }
 
 void CameraGL::rotate(const Eigen::Quaternionf& rot) {
-    rotation_ = rot.normalized() * rotation_.normalized();
+    rotation_ = rot * rotation_;
     updateVectors();
 }
 
@@ -1169,16 +1171,30 @@ void CameraGL::updateVectors() {
 
 void CameraGL::updateView() {
     //printf("CameraGL::updateView()\n");
-    Eigen::Affine3f transformation(Eigen::Affine3f::Identity());
+    //Eigen::Affine3f transformation(Eigen::Affine3f::Identity());
     // Extract rotation from class rotation_ object
-    Eigen::Quaternionf quat(rotation_);
-    quat.normalize();
-    Eigen::Matrix3f associated_rotation = quat.toRotationMatrix();
+    //Eigen::Quaternionf quat(rotation_);
+    //quat.normalize();
+    //Eigen::Matrix3f associated_rotation = quat.toRotationMatrix();
     // Apply rotation
-    transformation.rotate(associated_rotation);
+#if 0
+    std::cout << "rot: " << std::endl;
+    std::cout << associated_rotation << std::endl;
+#endif
+    //transformation.rotate(associated_rotation);
+    Eigen::Affine3f transformation(rotation_);
+    //transformation.rotate(rotation_);
     // Rotate offset by rotation quat and add position translation
     Eigen::Vector3f transl = rotation_._transformVector(offset_) + position_;
-    transformation.translate(transl);
+#if 0
+    std::cout << "transl: " << std::endl;
+    std::cout << transl << std::endl;
+#endif
+    transformation.pretranslate(transl);
+#if 0
+    std::cout << "transf: " << std::endl;
+    std::cout << transformation.matrix() << std::endl;
+#endif
 
     // update view_
     view_ = transformation.inverse();
@@ -1187,4 +1203,5 @@ void CameraGL::updateView() {
 void CameraGL::updateVPMatrix() {
     //printf("CameraGL::updateVPMatrix()\n");
     vpMatrix_ = projection_ * view_;
+    //vpMatrix_ = view_ * projection_;
 }

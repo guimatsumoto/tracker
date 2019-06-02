@@ -155,8 +155,8 @@ void render_run(std::vector<tracker::PeoplePose> &pose,
         while (!has_tracked_poses)
             usleep(500);
 
- 	    fill_people_object_for_opengl(pose, po);
-        //fill_test_cube(po);
+ 	    //fill_people_object_for_opengl(pose, po);
+        fill_test_cube(po);
 
 	    if (RENDER_RGB){
             cv::putText(rgb_im, "Frame: " + std::to_string(current_frame+1), cvPoint(30, 30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(200, 200, 250));
@@ -269,11 +269,12 @@ void fill_people_object_for_opengl(std::vector<tracker::PeoplePose> &poseKeypoin
                                               pow((v2(1) + v1(1))*0.5f - center_gravity(1), 2) +
                                               pow((v2(2) + v1(2))*0.5f - center_gravity(2), 2));
         //if (isfinite(distance_gravity_center) && distance < MAX_DISTANCE_LIMB){
+        if (isfinite(distance_gravity_center) && isfinite(distance)){
             vertices.emplace_back(tracker::float3{v1(0), v1(1), v1(2)});
             vertices.emplace_back(tracker::float3{v2(0), v2(1), v2(2)});
             clr.push_back(generateColor(poseKeypoints[person].id));
             clr.push_back(generateColor(poseKeypoints[person].id));
-        //}
+        }
     }
     po.setVert(vertices, clr);
 }
@@ -281,64 +282,66 @@ void fill_people_object_for_opengl(std::vector<tracker::PeoplePose> &poseKeypoin
 void fill_test_cube(PeoplesObject &po){
     std::vector<tracker::float3> vertices, clr;
 
+    float side = 1.5;
+
     // vert 1
     vertices.emplace_back(tracker::float3{0, .5, 0});
-    vertices.emplace_back(tracker::float3{.5, .5, 0});
+    vertices.emplace_back(tracker::float3{side, .5, 0});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 2
-    vertices.emplace_back(tracker::float3{.5, .5, 0});
-    vertices.emplace_back(tracker::float3{.5, .5, -.5});
+    vertices.emplace_back(tracker::float3{side, .5, 0});
+    vertices.emplace_back(tracker::float3{side, .5, -side});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 3
-    vertices.emplace_back(tracker::float3{.5, .5, -.5});
-    vertices.emplace_back(tracker::float3{0, .5, -.5});
+    vertices.emplace_back(tracker::float3{side, .5, -side});
+    vertices.emplace_back(tracker::float3{0, .5, -side});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 4
-    vertices.emplace_back(tracker::float3{0, .5, -.5});
+    vertices.emplace_back(tracker::float3{0, .5, -side});
     vertices.emplace_back(tracker::float3{0, .5, 0});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 5
     vertices.emplace_back(tracker::float3{0, .5, 0});
-    vertices.emplace_back(tracker::float3{0, 1., 0});
+    vertices.emplace_back(tracker::float3{0, .5+side, 0});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 6
-    vertices.emplace_back(tracker::float3{.5, .5, 0});
-    vertices.emplace_back(tracker::float3{.5, 1., 0});
+    vertices.emplace_back(tracker::float3{side, .5, 0});
+    vertices.emplace_back(tracker::float3{side, .5+side, 0});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 7
-    vertices.emplace_back(tracker::float3{.5, .5, -.5});
-    vertices.emplace_back(tracker::float3{.5, 1., -.5});
+    vertices.emplace_back(tracker::float3{side, .5, -side});
+    vertices.emplace_back(tracker::float3{side, .5+side, -side});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 8
-    vertices.emplace_back(tracker::float3{0, .5, -.5});
-    vertices.emplace_back(tracker::float3{0, 1., -.5});
+    vertices.emplace_back(tracker::float3{0, .5, -side});
+    vertices.emplace_back(tracker::float3{0, .5+side, -side});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 9
-    vertices.emplace_back(tracker::float3{0, 1., 0});
-    vertices.emplace_back(tracker::float3{.5, 1., 0});
+    vertices.emplace_back(tracker::float3{0, .5+side, 0});
+    vertices.emplace_back(tracker::float3{side, .5+side, 0});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 10
-    vertices.emplace_back(tracker::float3{.5, 1., 0});
-    vertices.emplace_back(tracker::float3{.5, 1., -.5});
+    vertices.emplace_back(tracker::float3{side, .5+side, 0});
+    vertices.emplace_back(tracker::float3{side, .5+side, -side});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 11
-    vertices.emplace_back(tracker::float3{.5, 1., -.5});
-    vertices.emplace_back(tracker::float3{0, 1., -.5});
+    vertices.emplace_back(tracker::float3{side, .5+side, -side});
+    vertices.emplace_back(tracker::float3{0, .5+side, -side});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     // vert 12
-    vertices.emplace_back(tracker::float3{0, 1., -.5});
-    vertices.emplace_back(tracker::float3{0, 1., 0});
+    vertices.emplace_back(tracker::float3{0, .5+side, -side});
+    vertices.emplace_back(tracker::float3{0, .5+side, 0});
     clr.push_back(generateColor(-1));
     clr.push_back(generateColor(-1));
     po.setVert(vertices, clr);
