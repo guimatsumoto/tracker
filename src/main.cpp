@@ -23,12 +23,11 @@
 #define MAX_DISTANCE_LIMB 1
 
 // Define which dataset to use
-#define USE_KTP_DATASET
+//#define USE_KTP_DATASET
 
 // Define GLViewer -> it has to be global (weird) as in GLUT things
 // only make sense if they are global
 GLViewer viewer;
-//PeoplesObject peopleObj;
 
 // thread callback for different modules
 void tracker_run(Detector &d,
@@ -123,8 +122,10 @@ void tracker_run(Detector &d,
 
     while (!quit){
 
-        while (!has_rgbd_detection)
+        if (!has_rgbd_detection){
             usleep(500);
+            continue;
+        }
 
         depth_kp = d.estimate_keypoints_depth(image_kp, depth_im);
 #if 0
@@ -152,25 +153,27 @@ void render_run(std::vector<tracker::PeoplePose> &pose,
                 cv::Mat &depth_im){
     while (!quit){
 
-        while (!has_tracked_poses)
+        if (!has_tracked_poses){
             usleep(500);
+            continue;
+        }
 
- 	    //fill_people_object_for_opengl(pose, po);
-        fill_test_cube(po);
+ 	    fill_people_object_for_opengl(pose, po);
+        //fill_test_cube(po);
 
-	    if (RENDER_RGB){
+	    if (RENDER_RGB && rgb_im.rows>0){
             cv::putText(rgb_im, "Frame: " + std::to_string(current_frame+1), cvPoint(30, 30), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(200, 200, 250));
             cv::imshow("Pose", rgb_im);
             cv::moveWindow("Pose", 120, 550);
         }
 
-        if (RENDER_DEPTH){
+        if (RENDER_DEPTH && depth_im.rows>0){
             cv::imshow("Depth", depth_im);
             cv::moveWindow("Depth", 120, 45);
         }
 
         if (RENDER_RGB || RENDER_DEPTH){
-            cv::waitKey(10);
+            cv::waitKey(30);
         }
 
         viewer.update(po);
@@ -259,21 +262,33 @@ void fill_people_object_for_opengl(std::vector<tracker::PeoplePose> &poseKeypoin
             v1 = Eigen::Vector4f(kps[partsLink[part]]);
             v2 = Eigen::Vector4f(kps[partsLink[part+1]]);
             visualize = true;
-        }
 
-        float distance = sqrt((v1(0) - v2(0)) * (v1(0) - v2(0)) +
-                              (v1(1) - v2(1)) * (v1(1) - v2(1)) +
-                              (v1(2) - v2(2)) * (v1(2) - v2(2)));
+            float distance = sqrt((v1(0) - v2(0)) * (v1(0) - v2(0)) +
+                                  (v1(1) - v2(1)) * (v1(1) - v2(1)) +
+                                  (v1(2) - v2(2)) * (v1(2) - v2(2)));
 
-        float distance_gravity_center = sqrt( pow((v2(0) + v1(0))*0.5f - center_gravity(0), 2) +
-                                              pow((v2(1) + v1(1))*0.5f - center_gravity(1), 2) +
-                                              pow((v2(2) + v1(2))*0.5f - center_gravity(2), 2));
-        //if (isfinite(distance_gravity_center) && distance < MAX_DISTANCE_LIMB){
-        if (isfinite(distance_gravity_center) && isfinite(distance)){
-            vertices.emplace_back(tracker::float3{v1(0), v1(1), v1(2)});
-            vertices.emplace_back(tracker::float3{v2(0), v2(1), v2(2)});
-            clr.push_back(generateColor(poseKeypoints[person].id));
-            clr.push_back(generateColor(poseKeypoints[person].id));
+            float distance_gravity_center = sqrt( pow((v2(0) + v1(0))*0.5f - center_gravity(0), 2) +
+                                                  pow((v2(1) + v1(1))*0.5f - center_gravity(1), 2) +
+                                                  pow((v2(2) + v1(2))*0.5f - center_gravity(2), 2));
+            //if (isfinite(distance_gravity_center) && distance < MAX_DISTANCE_LIMB){
+            if (isfinite(distance_gravity_center) &&
+                isfinite(distance) &&
+                (v1(3) > .5) && (v2(3) > .5)){
+                vertices.push_back(tracker::float3{v1(0), v1(1), v1(2)});
+#if 0
+                std::cout << vertices.back().x << " "
+                          << vertices.back().y << " "
+                          << vertices.back().c << std::endl;
+#endif
+                vertices.push_back(tracker::float3{v2(0), v2(1), v2(2)});
+#if 0
+                std::cout << vertices.back().x << " "
+                          << vertices.back().y << " "
+                          << vertices.back().c << std::endl;
+#endif
+                clr.push_back(generateColor(poseKeypoints[person].id));
+                clr.push_back(generateColor(poseKeypoints[person].id));
+            }
         }
     }
     po.setVert(vertices, clr);

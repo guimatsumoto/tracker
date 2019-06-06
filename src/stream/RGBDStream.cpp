@@ -51,7 +51,8 @@ cv::Mat RGBDStream::get_next_depth_image(){
     if (has_more_depth_images()){
     	try{
 	    	depth_frame_number++;
-		    return cv::imread(depth_files[depth_frame_number], CV_LOAD_IMAGE_COLOR);
+		    //return cv::imread(depth_files[depth_frame_number], CV_LOAD_IMAGE_COLOR);
+            return cv::imread(depth_files[depth_frame_number], CV_LOAD_IMAGE_ANYCOLOR | CV_LOAD_IMAGE_ANYDEPTH);
     	}catch(std::exception const& e){
 	    	cout << "Error loading depth image number " << depth_frame_number << std::endl;
     	}

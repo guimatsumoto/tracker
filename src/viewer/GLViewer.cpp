@@ -200,7 +200,7 @@ Eigen::Affine3f GLObject::getModelMatrix() const {
     quat.normalize();
     Eigen::Matrix3f associated_rotation = quat.toRotationMatrix();
     m.rotate(associated_rotation);
-    m.translate(position_);
+    m.pretranslate(position_);
     return m;
 }
 
@@ -260,6 +260,16 @@ PeoplesObject::~PeoplesObject() {
 
 void PeoplesObject::setVert(std::vector<tracker::float3> &vertices, std::vector<tracker::float3> &clr) {
     mtx.lock();
+#if 0
+    for (unsigned i = 0; i < vertices.size(); i+=2){
+        std::cout << vertices[i].x << " "
+                  << vertices[i].y << " "
+                  << vertices[i].c << std::endl;
+        std::cout << vertices[i+1].x << " "
+                  << vertices[i+1].y << " "
+                  << vertices[i+1].c << std::endl;
+    }
+#endif
     vert = vertices;
     this->clr = clr;
 
@@ -1034,7 +1044,7 @@ CameraGL::CameraGL(Eigen::Vector3f position, Eigen::Vector3f direction, Eigen::V
     updateView();
     //setProjection(60, 60, 0.01f, 100.f);
     //setProjection(160, 160, .01f, 100.f);
-    setProjection(120, 120, 2.f, 100.f);
+    setProjection(120, 120, .01f, 100.f);
     updateVPMatrix();
     //printf("CameraGL::CameraGL()\n");
 }
@@ -1058,8 +1068,6 @@ void CameraGL::setProjection(float horizontalFOV, float verticalFOV, float znear
     znear_ = znear;
     zfar_ = zfar;
 
-    //float fov_y = verticalFOV * M_PI / 180.f;
-    //float fov_x = horizontalFOV * M_PI / 180.f;
     float fov_y = verticalFOV * M_PI / 180.f;
     float fov_x = horizontalFOV * M_PI / 180.f;
 
@@ -1186,6 +1194,13 @@ void CameraGL::updateView() {
     //transformation.rotate(rotation_);
     // Rotate offset by rotation quat and add position translation
     Eigen::Vector3f transl = rotation_._transformVector(offset_) + position_;
+#if 0
+    std::cout << transl << std::endl;
+    Eigen::Matrix3f ass_rot = rotation_.normalized().toRotationMatrix();
+    Eigen::Vector3f new_transl = ass_rot * offset_ + position_;
+    std::cout << new_transl << std::endl;
+    std::cout << " " << std::endl;
+#endif
 #if 0
     std::cout << "transl: " << std::endl;
     std::cout << transl << std::endl;

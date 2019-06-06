@@ -43,13 +43,20 @@ std::vector<Eigen::Vector4f> Detector::estimate_keypoints_depth(std::vector<Eige
 			    // Trivial method
 			    z = (float)depth_frame.at<short>((int)pose_keypoints[i](1), (int)pose_keypoints[i](0))/1000;
 			    // Stephane Magnenat's method
-			    //z = 0.1236*tan(depth_frame.at<short>((int)pose_keypoints[i].y, (int)pose_keypoints[i].x) / 2842.5 + 1.1863);
+			    //z = 0.1236*tan(depth_frame.at<short>((int)pose_keypoints[i](1), (int)pose_keypoints[i](0)) / 2842.5 + 1.1863);
 			    x = (pose_keypoints[i](0) - cx) * z / fx;
 			    y = (pose_keypoints[i](1) - cy) * z / fy;
-			    kp(0) = x;
-			    kp(1) = y;
-			    kp(2) = z;
-			    kp(3) = pose_keypoints[i](2);
+                if (x + y + z == 0){
+                    kp(0) = NAN;
+			        kp(1) = NAN;
+			        kp(2) = NAN;
+			        kp(3) = pose_keypoints[i](2);
+                }else{
+			        kp(0) = x;
+			        kp(1) = y;
+			        kp(2) = z;
+			        kp(3) = pose_keypoints[i](2);
+                }
             }
 #if 0
             std::cout << pose_keypoints[i](0) << " " << pose_keypoints[i](1) << " - ";
@@ -73,7 +80,7 @@ std::vector<tracker::PeoplePose> Detector::emulateTracker(std::vector<Eigen::Vec
         Eigen::Vector3f barycenter(0, 0, 0);
         unsigned valid_kps;
         for (unsigned j = 0; j < 25; j++){
-            aux.keypoints_3d.emplace_back(Eigen::Vector4f(people[25*i+j]));
+            aux.keypoints_3d.push_back(Eigen::Vector4f(people[25*i+j]));
             if (people[25*i+j](3) > 0){
                 Eigen::Vector3f kp_pos(people[25*i+j](0),
                                        people[25*i+j](1),
@@ -89,7 +96,7 @@ std::vector<tracker::PeoplePose> Detector::emulateTracker(std::vector<Eigen::Vec
         else
             barycenter = Eigen::Vector3f(NAN, NAN, NAN);
         aux.barycenter = barycenter;
-        ogl_people.emplace_back(aux);
+        ogl_people.push_back(aux);
     }
     return ogl_people;
 }
