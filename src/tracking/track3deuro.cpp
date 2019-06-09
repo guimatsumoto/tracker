@@ -1,6 +1,6 @@
-#include "sl_core/ai/skeleton/tracking/track3deuro.h"
+#include "tracking/track3deuro.h"
 
-namespace zed_tracking {
+namespace tracker {
 
     Track3DEuro::Track3DEuro(
             int id,
@@ -18,8 +18,8 @@ namespace zed_tracking {
                 float(rand() % 256) / 255);
 
         MAX_SIZE = 90; //XXX create a parameter!!!
-        filter_ = new zed_tracking::OneEuroFilter3D(1 / period, mincutoff, beta, dcutoff);
-        tmp_filter_ = new zed_tracking::OneEuroFilter3D(1 / period, mincutoff, beta, dcutoff);
+        filter_ = new tracker::OneEuroFilter3D(1 / period, mincutoff, beta, dcutoff);
+        tmp_filter_ = new tracker::OneEuroFilter3D(1 / period, mincutoff, beta, dcutoff);
     }
 
     Track3DEuro::~Track3DEuro() {
@@ -28,7 +28,7 @@ namespace zed_tracking {
     }
 
 void
-    Track3DEuro::init(const zed_tracking::Track3DEuro& old_track) {
+    Track3DEuro::init(const tracker::Track3DEuro& old_track) {
         double x, y, z;
         old_track.filter_->getState(x, y, z);
 
@@ -240,4 +240,4 @@ void
         filter_->getState(x, y, z);
     }
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/

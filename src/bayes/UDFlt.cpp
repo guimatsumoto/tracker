@@ -13,8 +13,8 @@
  * ISSUES:
  *  observe functions: returned rcond is the minimum of each sequential update, an overall conditioning would be better
  */
-#include "sl_core/ai/skeleton/bayes/UDFlt.hpp"
-#include "sl_core/ai/skeleton/bayes/matSup.hpp"
+#include "bayes/UDFlt.hpp"
+#include "bayes/matSup.hpp"
 #include <boost/limits.hpp>
 
 /* Filter namespace */

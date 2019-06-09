@@ -1,12 +1,10 @@
-#ifndef TRACKING_DETECTION_H_
-#define TRACKING_DETECTION_H_
-#include "sl_core/ai/ai_release.hpp"
+#ifndef TRACKER_DETECTION_H_
+#define TRACKER_DETECTION_H_
 
 #include <Eigen/Eigen>
-#include <sl_core/ai/skeleton/tracking/pose.h>
-#include "sl_core/ai/timeUtil.h"
+#include <tracking/pose.h>
 
-namespace zed_tracking {
+namespace tracker {
 
     /** \brief Detection represents information about a people detection */
     class Detection {
@@ -28,7 +26,7 @@ namespace zed_tracking {
 
     public:
 
-        /** \brief Constructor. 
+        /** \brief Constructor.
             \param[in] keypoints vector composed of a keypoint concatenation of (x, y, z) + score
          */
         Detection(std::vector<Eigen::Vector4d> keypoints, Eigen::Vector3d gravity_center, struct timeval detection_time, double distance);
@@ -114,6 +112,6 @@ namespace zed_tracking {
 
     };
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/
 
-#endif /* TRACKING_DETECTION_H_ */
+#endif /* TRACKER_DETECTION_H_ */

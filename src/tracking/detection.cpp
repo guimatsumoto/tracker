@@ -1,6 +1,6 @@
-#include "sl_core/ai/skeleton/tracking/detection.h"
+#include "tracking/detection.h"
 
-namespace zed_tracking {
+namespace tracker {
 
     Detection::Detection(std::vector<Eigen::Vector4d> keypoints, Eigen::Vector3d gravity_center, struct timeval detection_time, double distance) :
     keypoints_(keypoints), world_centroid_(gravity_center), detection_time_(detection_time), distance_(distance) {
@@ -96,4 +96,4 @@ namespace zed_tracking {
         return distance_;
     }
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/

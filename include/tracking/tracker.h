@@ -1,32 +1,32 @@
-#ifndef TRACKING_TRACKER_H_
-#define TRACKING_TRACKER_H_
-#include "sl_core/ai/ai_release.hpp"
+#ifndef TRACKER_TRACKER_H_
+#define TRACKER_TRACKER_H_
 
-#include "sl_core/ai/skeleton/tracking/detection.h"
-#include "sl_core/ai/skeleton/tracking/track.h"
-#include "sl_core/ai/skeleton/tracking/munkres.h"
+#include "tracking/detection.h"
+#include "tracking/track.h"
+#include "tracking/munkres.h"
 #include <chrono>
+#include <sys/time.h>
 
-/*TODO: Verify if data association is necessary*/
+/*TODO: Verify if data association is working... talvez precise mudar as correlacoes*/
 
-namespace zed_tracking {
+namespace tracker {
 
     class  Tracker {
     protected:
         // Active tracks
-        std::list<zed_tracking::Track*> tracks_;
+        std::list<tracker::Track*> tracks_;
 
         // Lost tracks
-        std::list<zed_tracking::Track*> lost_tracks_;
+        std::list<tracker::Track*> lost_tracks_;
 
         // Tracks with NEW status
-        std::list<zed_tracking::Track*> new_tracks_;
+        std::list<tracker::Track*> new_tracks_;
 
         // Current frame's detections
-        std::vector<zed_tracking::Detection> detections_;
+        std::vector<tracker::Detection> detections_;
 
         // Current frame's unassociated detections
-        std::list<zed_tracking::Detection> unassociated_detections_;
+        std::list<tracker::Detection> unassociated_detections_;
 
         // Unique tracks counter
         int tracks_counter_;
@@ -124,7 +124,7 @@ namespace zed_tracking {
 
         // Initialize a new set of detections
         virtual void
-        newFrame(const std::vector<zed_tracking::Detection>& detections);
+        newFrame(const std::vector<tracker::Detection>& detections);
 
         // Update the set of tracks
         virtual void
@@ -177,6 +177,6 @@ namespace zed_tracking {
 
     };
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/
 
-#endif /* TRACKING_TRACKER_H_ */
+#endif /* TRACKER_TRACKER_H_ */

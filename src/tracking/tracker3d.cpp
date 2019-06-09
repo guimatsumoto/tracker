@@ -1,14 +1,7 @@
-
-#if defined(LINKS_WITH_EXTERN_OPENCV)
 #include <opencv2/opencv.hpp>
-#else
-#include "sl_core/opencv/cv_wrapper.hpp"
-using namespace slutils;
-#endif
+#include "tracking/tracker3d.h"
 
-#include "sl_core/ai/skeleton/tracking/tracker3d.h"
-
-namespace zed_tracking {
+namespace tracker {
 
     Tracker3D::Tracker3D(
             double gate_distance,
@@ -51,7 +44,7 @@ namespace zed_tracking {
     }
 
 void
-    Tracker3D::newFrame(const std::vector<zed_tracking::Detection>& detections) {
+    Tracker3D::newFrame(const std::vector<tracker::Detection>& detections) {
         detections_.clear();
         unassociated_detections_.clear();
         lost_tracks_.clear();
@@ -60,11 +53,11 @@ void
 
         struct timeval current_detections_time = detections_[0].getTime();
 
-        for (std::list<zed_tracking::Track3D*>::iterator it = tracks_.begin(); it != tracks_.end();) {
-            zed_tracking::Track3D* t = *it;
+        for (std::list<tracker::Track3D*>::iterator it = tracks_.begin(); it != tracks_.end();) {
+            tracker::Track3D* t = *it;
             bool deleted = false;
 
-            if (((t->getVisibility() == zed_tracking::Track3D::NOT_VISIBLE && (t->getSecFromLastHighConfidenceDetection(current_detections_time)) >= sec_before_old_)
+            if (((t->getVisibility() == tracker::Track3D::NOT_VISIBLE && (t->getSecFromLastHighConfidenceDetection(current_detections_time)) >= sec_before_old_)
                     || (!t->isValidated() && t->getSecFromFirstDetection(current_detections_time) >= sec_before_fake_))) {
                 if (debug_mode_) {
                     std::cout << "Track " << t->getId() << " DELETED" << std::endl;
@@ -77,17 +70,17 @@ void
                 if (debug_mode_) {
                     std::cout << "Track " << t->getId() << " VALIDATED" << std::endl;
                 }
-            } else if (t->getStatus() == zed_tracking::Track3D::NEW && t->getSecFromFirstDetection(current_detections_time) >= sec_remain_new_) {
-                t->setStatus(zed_tracking::Track3D::NORMAL);
+            } else if (t->getStatus() == tracker::Track3D::NEW && t->getSecFromFirstDetection(current_detections_time) >= sec_remain_new_) {
+                t->setStatus(tracker::Track3D::NORMAL);
                 if (debug_mode_) {
                     std::cout << "Track " << t->getId() << " set to NORMAL" << std::endl;
                 }
             }
 
             if (!deleted) {
-                if (t->getStatus() == zed_tracking::Track3D::NEW && t->getVisibility() == Track3D::VISIBLE)
+                if (t->getStatus() == tracker::Track3D::NEW && t->getVisibility() == Track3D::VISIBLE)
                     new_tracks_.push_back(t);
-                if (t->getVisibility() == zed_tracking::Track3D::NOT_VISIBLE)
+                if (t->getVisibility() == tracker::Track3D::NOT_VISIBLE)
                     lost_tracks_.push_back(t);
                 it++;
             }
@@ -101,7 +94,7 @@ void
         createCostMatrix();
 
         // Solve Global Nearest Neighbor problem:
-        zed_tracking::Munkres munkres;
+        tracker::Munkres munkres;
         cost_matrix_ = munkres.solve(cost_matrix_, false); // rows: targets (tracks), cols: detections
 
         updateDetectedTracks();
@@ -113,11 +106,11 @@ void
     /************************ protected methods ************************/
 
     int
-    Tracker3D::createNewTrack(zed_tracking::Detection& detection) {
+    Tracker3D::createNewTrack(tracker::Detection& detection) {
         if (detection.getConfidence() < min_confidence_)
             return -1;
 
-        zed_tracking::Track3D* t;
+        tracker::Track3D* t;
         t = new Track3D(
                 ++tracks_counter_,
                 world_frame_id_,
@@ -144,11 +137,11 @@ void
     Tracker3D::createDistanceMatrix() {
         distance_matrix_ = cv::Mat_<double>(tracks_.size(), detections_.size());
         int track = 0;
-        for (std::list<zed_tracking::Track3D*>::const_iterator it = tracks_.begin(),
+        for (std::list<tracker::Track3D*>::const_iterator it = tracks_.begin(),
                 end = tracks_.end(); it != end; it++) {
-            zed_tracking::Track3D* t = *it;
+            tracker::Track3D* t = *it;
             int measure = 0;
-            for (std::vector<zed_tracking::Detection>::iterator dit = detections_.begin(); dit != detections_.end(); dit++) {
+            for (std::vector<tracker::Detection>::iterator dit = detections_.begin(); dit != detections_.end(); dit++) {
                 double detector_likelihood;
 
                 // Compute detector likelihood:
@@ -197,14 +190,14 @@ void
 
         // Iterate over every track:
         int track = 0;
-        for (std::list<zed_tracking::Track3D*>::iterator it = tracks_.begin(); it != tracks_.end(); it++) {
+        for (std::list<tracker::Track3D*>::iterator it = tracks_.begin(); it != tracks_.end(); it++) {
             bool updated = false;
-            zed_tracking::Track3D* t = *it;
+            tracker::Track3D* t = *it;
 
             for (int measure = 0; measure < cost_matrix_.cols; measure++) {
                 // If a detection<->track association has been found:
                 if (cost_matrix_(track, measure) == 0.0 && distance_matrix_(track, measure) <= gate_distance_) {
-                    zed_tracking::Detection& d = detections_[measure];
+                    tracker::Detection& d = detections_[measure];
 
                     if ((t->getLowConfidenceConsecutiveFrames() < 10) || (d.getConfidence() > ((min_confidence_ + min_confidence_detections_) / 2))) {
                         // Update track with the associated detection:
@@ -215,7 +208,7 @@ void
                                 d.getConfidence(), min_confidence_, min_confidence_detections_,
                                 d.getTime(), first_update);
 
-                        t->setVisibility(d.isOccluded() ? zed_tracking::Track3D::OCCLUDED : zed_tracking::Track3D::VISIBLE);
+                        t->setVisibility(d.isOccluded() ? tracker::Track3D::OCCLUDED : tracker::Track3D::VISIBLE);
                         updated = true;
                         break;
                     } else {
@@ -224,8 +217,8 @@ void
                 }
             }
             if (!updated) {
-                if (t->getVisibility() != zed_tracking::Track3D::NOT_VISIBLE) {
-                    t->setVisibility(zed_tracking::Track3D::NOT_VISIBLE);
+                if (t->getVisibility() != tracker::Track3D::NOT_VISIBLE) {
+                    t->setVisibility(tracker::Track3D::NOT_VISIBLE);
                 }
             }
             track++;
@@ -262,7 +255,7 @@ void
 
 void
     Tracker3D::createNewTracks() {
-        for (std::list<zed_tracking::Detection>::iterator dit = unassociated_detections_.begin();
+        for (std::list<tracker::Detection>::iterator dit = unassociated_detections_.begin();
                 dit != unassociated_detections_.end(); dit++) {
             createNewTrack(*dit);
         }
@@ -311,8 +304,8 @@ void
         position_variance_ = position_variance;
 
         // Update all existing tracks:
-        for (std::list<zed_tracking::Track3D*>::iterator it = tracks_.begin(); it != tracks_.end(); it++) {
-            zed_tracking::Track3D* t = *it;
+        for (std::list<tracker::Track3D*>::iterator it = tracks_.begin(); it != tracks_.end(); it++) {
+            tracker::Track3D* t = *it;
             t->setVelocityInMotionTerm(velocity_in_motion_term_, acceleration_variance_, position_variance_);
         }
     }
@@ -322,8 +315,8 @@ void
         acceleration_variance_ = acceleration_variance;
 
         // Update all existing tracks:
-        for (std::list<zed_tracking::Track3D*>::iterator it = tracks_.begin(); it != tracks_.end(); it++) {
-            zed_tracking::Track3D* t = *it;
+        for (std::list<tracker::Track3D*>::iterator it = tracks_.begin(); it != tracks_.end(); it++) {
+            tracker::Track3D* t = *it;
             t->setAccelerationVariance(acceleration_variance_);
         }
     }
@@ -333,8 +326,8 @@ void
         position_variance_ = position_variance;
 
         // Update all existing tracks:
-        for (std::list<zed_tracking::Track3D*>::iterator it = tracks_.begin(); it != tracks_.end(); it++) {
-            zed_tracking::Track3D* t = *it;
+        for (std::list<tracker::Track3D*>::iterator it = tracks_.begin(); it != tracks_.end(); it++) {
+            tracker::Track3D* t = *it;
             t->setPositionVariance(position_variance_);
         }
     }
@@ -344,4 +337,4 @@ void
         gate_distance_ = gate_distance;
     }
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/

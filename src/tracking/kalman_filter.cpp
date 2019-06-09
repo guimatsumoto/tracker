@@ -1,7 +1,6 @@
-//#include <ros/ros.h>
-#include "sl_core/ai/skeleton/tracking/kalman_filter.h"
+#include "tracking/kalman_filter.h"
 
-namespace zed_tracking {
+namespace tracker {
 
     PredictModel::PredictModel(double dt, double acceleration_variance) :
     Bayesian_filter::Linear_predict_model(4, 2), dt_(dt) {
@@ -274,4 +273,4 @@ namespace zed_tracking {
         observe_model_ = new ObserveModel(position_variance_, output_dimension_);
     }
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/

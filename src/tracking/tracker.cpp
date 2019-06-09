@@ -1,14 +1,7 @@
-
-#if defined(LINKS_WITH_EXTERN_OPENCV)
 #include <opencv2/opencv.hpp>
-#else
-#include "sl_core/opencv/cv_wrapper.hpp"
-using namespace slutils;
-#endif
+#include "tracking/tracker.h"
 
-#include "sl_core/ai/skeleton/tracking/tracker.h"
-
-namespace zed_tracking {
+namespace tracker {
 
     Tracker::Tracker(double gate_distance, bool detector_likelihood,
             std::vector<double> likelihood_weights, bool velocity_in_motion_term, double min_confidence,
@@ -32,7 +25,7 @@ namespace zed_tracking {
 
     /*Verify if the actual object to be passed is a Pose or if we need a Detection object*/
     void
-    Tracker::newFrame(const std::vector<zed_tracking::Detection>& detections) {
+    Tracker::newFrame(const std::vector<tracker::Detection>& detections) {
         detections_.clear();
         unassociated_detections_.clear();
         lost_tracks_.clear();
@@ -42,14 +35,14 @@ namespace zed_tracking {
         struct timeval currentTime;
         gettimeofday(&currentTime, NULL);
 
-        for (std::list<zed_tracking::Track*>::iterator
+        for (std::list<tracker::Track*>::iterator
             it = tracks_.begin(); it != tracks_.end();) {
             Track* t = *it;
             bool deleted = false;
 
             // If the track either became old or was never validated before it can be considered fake
             // the track is deleted
-            if ((t->getVisibility() == zed_tracking::Track::NOT_VISIBLE &&
+            if ((t->getVisibility() == tracker::Track::NOT_VISIBLE &&
                     (t->getSecFromLastHighConfidenceDetection(currentTime)) >= sec_before_old_)
                     || (!t->isValidated() && t->getSecFromFirstDetection(currentTime) >= sec_before_fake_)) {
                 delete t;
@@ -65,7 +58,7 @@ namespace zed_tracking {
                     std::cout << "Track " << t->getId() << " has been validated" << std::endl;
             }                // If the track is validated but still has status NEW, check if a certain amount of time
                 // has passed since its first detection and if so set status to NORMAL
-            else if (t->getStatus() == zed_tracking::Track::NEW &&
+            else if (t->getStatus() == tracker::Track::NEW &&
                     t->getSecFromFirstDetection(currentTime) >= sec_remain_new_) {
                 t->setStatus(Track::NORMAL);
                 if (debug_mode_)
@@ -76,11 +69,11 @@ namespace zed_tracking {
             // If the track hasn't been deleted because it was too old or was considered fake
             if (!deleted) {
                 // If it's NEW and VISIBLE
-                if (t->getStatus() == zed_tracking::Track::NEW && t->getVisibility() == Track::VISIBLE) {
+                if (t->getStatus() == tracker::Track::NEW && t->getVisibility() == Track::VISIBLE) {
                     new_tracks_.push_back(t);
                 }
                 // If it's NOT_VISIBLE
-                if (t->getVisibility() == zed_tracking::Track::NOT_VISIBLE) {
+                if (t->getVisibility() == tracker::Track::NOT_VISIBLE) {
                     lost_tracks_.push_back(t);
                 }
                 it++;
@@ -94,7 +87,7 @@ void
         createDistanceMatrix();
         createCostMatrix();
 
-        zed_tracking::Munkres munkres;
+        tracker::Munkres munkres;
         cost_matrix_ = munkres.solve(cost_matrix_, false);
 
         updateDetectedTracks();
@@ -104,11 +97,11 @@ void
     }
 
 int
-    Tracker::createNewTrack(zed_tracking::Detection& detection) {
+    Tracker::createNewTrack(tracker::Detection& detection) {
         if (detection.getConfidence() < min_confidence_)
             return -1;
 
-        zed_tracking::Track* t;
+        tracker::Track* t;
         t = new Track(++tracks_counter_, world_frame_id_, position_variance_,
                 acceleration_variance_, period_, velocity_in_motion_term_);
 
@@ -137,11 +130,11 @@ void
         distance_matrix_ = cv::Mat_<double>(tracks_.size(), detections_.size());
 
         int track = 0;
-        for (std::list<zed_tracking::Track*>::const_iterator it = tracks_.begin(),
+        for (std::list<tracker::Track*>::const_iterator it = tracks_.begin(),
                 end = tracks_.end(); it != end; it++) {
             Track* t = *it;
             int measure = 0;
-            for (std::vector<zed_tracking::Detection>::iterator dit = detections_.begin(), dend = detections_.end();
+            for (std::vector<tracker::Detection>::iterator dit = detections_.begin(), dend = detections_.end();
                     dit != dend; dit++) {
                 // Acount for detection confidence
                 double detector_likelihood;
@@ -181,14 +174,14 @@ void
 void
     Tracker::updateDetectedTracks() {
         int track = 0;
-        for (std::list<zed_tracking::Track*>::iterator it = tracks_.begin(); it != tracks_.end(); it++) {
+        for (std::list<tracker::Track*>::iterator it = tracks_.begin(); it != tracks_.end(); it++) {
             bool updated = false;
             Track* t = *it;
 
             for (int measure = 0; measure < cost_matrix_.cols; measure++) {
                 if (cost_matrix_(track, measure) == 0.0 &&
                         distance_matrix_(track, measure) <= gate_distance_) {
-                    zed_tracking::Detection& d = detections_[measure];
+                    tracker::Detection& d = detections_[measure];
 
                     if ((t->getLowConfidenceConsecutiveFrames() < 10) ||
                             (d.getConfidence() > ((min_confidence_ + min_confidence_detections_) / 2))) {
@@ -208,8 +201,8 @@ void
                 }
             }
             if (!updated)
-                if (t->getVisibility() != zed_tracking::Track::NOT_VISIBLE)
-                    t->setVisibility(zed_tracking::Track::NOT_VISIBLE);
+                if (t->getVisibility() != tracker::Track::NOT_VISIBLE)
+                    t->setVisibility(tracker::Track::NOT_VISIBLE);
             track++;
         }
 
@@ -242,7 +235,7 @@ void
 
     void
     Tracker::createNewTracks() {
-        for (std::list<zed_tracking::Detection>::iterator dit = unassociated_detections_.begin();
+        for (std::list<tracker::Detection>::iterator dit = unassociated_detections_.begin();
                 dit != unassociated_detections_.end(); dit++) {
             createNewTrack(*dit);
         }
@@ -293,7 +286,7 @@ void
         // Update all existing tracks:
         for (std::list<Track*>::iterator it = tracks_.begin();
                 it != tracks_.end(); it++) {
-            zed_tracking::Track* t = *it;
+            tracker::Track* t = *it;
             t->setVelocityInMotionTerm(velocity_in_motion_term_,
                     acceleration_variance_, position_variance_);
         }
@@ -304,9 +297,9 @@ void
         acceleration_variance_ = acceleration_variance;
 
         // Update each track as well
-        for (std::list<zed_tracking::Track*>::iterator it = tracks_.begin();
+        for (std::list<tracker::Track*>::iterator it = tracks_.begin();
                 it != tracks_.end(); it++) {
-            zed_tracking::Track* t = *it;
+            tracker::Track* t = *it;
             t->setAccelerationVariance(acceleration_variance_);
         }
     }
@@ -315,9 +308,9 @@ void
     Tracker::setPositionVariance(double position_variance) {
         position_variance_ = position_variance;
 
-        for (std::list<zed_tracking::Track*>::iterator it = tracks_.begin();
+        for (std::list<tracker::Track*>::iterator it = tracks_.begin();
                 it != tracks_.end(); it++) {
-            zed_tracking::Track* t = *it;
+            tracker::Track* t = *it;
             t->setPositionVariance(position_variance_);
         }
     }
@@ -327,4 +320,4 @@ void
         gate_distance_ = gate_distance;
     }
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/

@@ -12,7 +12,7 @@
 /*
  * Covariance Filter Scheme.
  *  Implementation of extended Kalman filter
- * 
+ *
  * To work with with Linear and Linrz models
  *  a) a state separate from covariance predict is used.
  *  b) a EKF innovation update algorithm is used.
@@ -20,12 +20,12 @@
  * respect to the observation.
  *
  * A initial observation size may also be specified for efficiency.
- * 
+ *
  * The filter is operated by performing a
  * predict, observe
  * cycle defined by the base class
  */
-#include "sl_core/ai/skeleton/bayes/bayesFlt.hpp"
+#include "bayes/bayesFlt.hpp"
 
 /* Filter namespace */
 namespace Bayesian_filter {

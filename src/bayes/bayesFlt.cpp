@@ -12,7 +12,7 @@
  *  error handlers
  *  default virtual and member functions
  */
-#include "sl_core/ai/skeleton/bayes/bayesFlt.hpp"
+#include "bayes/bayesFlt.hpp"
 #include <boost/limits.hpp>
 #include <vector>  // Only for unique_samples
 

@@ -9,8 +9,8 @@
 /*
  * Information Filter.
  */
-#include "sl_core/ai/skeleton/bayes/infFlt.hpp"
-#include "sl_core/ai/skeleton/bayes/matSup.hpp"
+#include "bayes/infFlt.hpp"
+#include "bayes/matSup.hpp"
 
 /* Filter namespace */
 namespace Bayesian_filter {

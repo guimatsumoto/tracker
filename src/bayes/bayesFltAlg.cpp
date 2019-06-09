@@ -9,9 +9,9 @@
 /*
  * Implement models.hpp :
  */
-#include "sl_core/ai/skeleton/bayes/bayesFlt.hpp"
-#include "sl_core/ai/skeleton/bayes/matSup.hpp"
-#include "sl_core/ai/skeleton/bayes/models.hpp"
+#include "bayes/bayesFlt.hpp"
+#include "bayes/matSup.hpp"
+#include "bayes/models.hpp"
 
 
 namespace {

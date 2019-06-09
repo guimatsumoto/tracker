@@ -1,6 +1,6 @@
-#include "sl_core/ai/skeleton/tracking/track.h"
+#include "tracking/track.h"
 
-namespace zed_tracking {
+namespace tracker {
 
     Track::Track(int id, std::string frame_id, double position_variance, double acceleration_variance,
             double period, bool velocity_in_motion_term) :
@@ -13,12 +13,12 @@ namespace zed_tracking {
 
         MAX_SIZE = 90;
         if (velocity_in_motion_term) {
-            filter_ = new zed_tracking::KalmanFilter(period, position_variance, acceleration_variance, 4);
-            tmp_filter_ = new zed_tracking::KalmanFilter(period, position_variance, acceleration_variance, 4);
+            filter_ = new tracker::KalmanFilter(period, position_variance, acceleration_variance, 4);
+            tmp_filter_ = new tracker::KalmanFilter(period, position_variance, acceleration_variance, 4);
             mahalanobis_map4d_.resize(MAX_SIZE, MahalanobisParameters4d());
         } else {
-            filter_ = new zed_tracking::KalmanFilter(period, position_variance, acceleration_variance, 2);
-            tmp_filter_ = new zed_tracking::KalmanFilter(period, position_variance, acceleration_variance, 2);
+            filter_ = new tracker::KalmanFilter(period, position_variance, acceleration_variance, 2);
+            tmp_filter_ = new tracker::KalmanFilter(period, position_variance, acceleration_variance, 2);
             mahalanobis_map2d_.resize(MAX_SIZE, MahalanobisParameters2d());
         }
     }
@@ -29,7 +29,7 @@ namespace zed_tracking {
     }
 
 void
-    Track::init(const zed_tracking::Track& old_track) {
+    Track::init(const tracker::Track& old_track) {
         double x, y;
         old_track.filter_->getState(x, y);
 
@@ -287,9 +287,9 @@ double
                 vy = mahalanobis_map4d_[vIndex].y;
             }
 
-            return zed_tracking::KalmanFilter::performMahalanobisDistance(x, y, vx, vy, mahalanobis_map4d_[index]);
+            return tracker::KalmanFilter::performMahalanobisDistance(x, y, vx, vy, mahalanobis_map4d_[index]);
         } else {
-            return zed_tracking::KalmanFilter::performMahalanobisDistance(x, y, mahalanobis_map2d_[index]);
+            return tracker::KalmanFilter::performMahalanobisDistance(x, y, mahalanobis_map2d_[index]);
         }
 
     }
@@ -320,12 +320,13 @@ void
         tmp_filter_->setObserveModel(position_variance);
     }
 
-sl::float3
+tracker::float3
     Track::getSpeed(){
         double x, y, vx, vy;
         filter_->getState(x, y, vx, vy);
         float y_speed = std::isfinite(z_previous) ? (float)(z_ - z_previous)/period_ : NAN;
-        return sl::float3((float)vx, (float)vy, y_speed);
+        //return sl::float3((float)vx, (float)vy, y_speed);
+        return {(float)vx, (float)vy, y_speed};
     }
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/

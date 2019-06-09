@@ -1,12 +1,11 @@
-#ifndef TRACKING_KALMAN_FILTER_3D_H_
-#define TRACKING_KALMAN_FILTER_3D_H_
-#include "sl_core/ai/ai_release.hpp"
+#ifndef TRACKER_KALMAN_FILTER_3D_H_
+#define TRACKER_KALMAN_FILTER_3D_H_
 
 #include <cmath>
 #include <Eigen/Eigen>
-#include "sl_core/ai/skeleton/bayes/allFilters.hpp"
+#include "bayes/allFilters.hpp"
 
-namespace zed_tracking {
+namespace tracker {
 
     // Linear state predict model
 
@@ -275,6 +274,6 @@ namespace zed_tracking {
 
     };
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/
 
-#endif /* TRACKING_KALMAN_FILTER_3D_H_ */
+#endif /* TRACKER_KALMAN_FILTER_3D_H_ */

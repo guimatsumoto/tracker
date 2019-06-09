@@ -1,6 +1,6 @@
-#include "sl_core/ai/skeleton/tracking/munkres.h"
+#include "tracking/munkres.h"
 
-namespace zed_tracking {
+namespace tracker {
 
     void
     Munkres::step_one(double** matrix, int rows, int cols, int& step) {
@@ -355,4 +355,4 @@ namespace zed_tracking {
         return matrix_out;
     }
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/

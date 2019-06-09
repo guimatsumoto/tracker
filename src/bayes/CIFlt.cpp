@@ -10,9 +10,9 @@
  * Covariance Intersection Filter.
  * TODO: Implement useful Omega based on iterative optimization algorithm from the authors of reference [1]
  */
-#include "sl_core/ai/skeleton/bayes/CIFlt.hpp"
-#include "sl_core/ai/skeleton/bayes/matSup.hpp"
-#include "sl_core/ai/skeleton/bayes/models.hpp"
+#include "bayes/CIFlt.hpp"
+#include "bayes/matSup.hpp"
+#include "bayes/models.hpp"
 
 /* Filter namespace */
 namespace Bayesian_filter {

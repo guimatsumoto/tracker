@@ -72,6 +72,9 @@ namespace tracker{
 		Eigen::Vector3f speed;
 
 		std::vector<int> img_position;
+        std::vector<int> img_bbox;
+
+        std::vector<tracker::float3> world_bbox;
 		std::vector<int> world_bbox_links;
 
 		Eigen::Vector3f gaze_direction;

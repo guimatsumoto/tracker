@@ -10,8 +10,8 @@
 /*
  * Covariance Filter.
  */
-#include "sl_core/ai/skeleton/bayes/covFlt.hpp"
-#include "sl_core/ai/skeleton/bayes/matSup.hpp"
+#include "bayes/covFlt.hpp"
+#include "bayes/matSup.hpp"
 
 /* Filter namespace */
 namespace Bayesian_filter {

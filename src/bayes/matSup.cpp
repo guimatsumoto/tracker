@@ -11,8 +11,8 @@
  * Relies on Bayesian_filter::Bayes_filter for exception
  * thrown by internal matrix checks
  */
-#include "sl_core/ai/skeleton/bayes/bayesFlt.hpp"  // Exceptions required
-#include "sl_core/ai/skeleton/bayes/matSup.hpp"
+#include "bayes/bayesFlt.hpp"  // Exceptions required
+#include "bayes/matSup.hpp"
 #include <cassert>
 #ifndef NDEBUG
 #include "boost/numeric/ublas/io.hpp"

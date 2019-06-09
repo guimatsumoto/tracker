@@ -1,6 +1,6 @@
-#include "sl_core/ai/skeleton/tracking/kalman_filter3d.h"
+#include "tracking/kalman_filter3d.h"
 
-namespace zed_tracking {
+namespace tracker {
 
     PredictModel3D::PredictModel3D(double dt, double acceleration_variance) :
     Bayesian_filter::Linear_predict_model(6, 3), dt_(dt) {
@@ -306,4 +306,4 @@ namespace zed_tracking {
         observe_model_ = new ObserveModel3D(position_variance_, output_dimension_);
     }
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/

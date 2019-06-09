@@ -1,6 +1,6 @@
-#include "sl_core/ai/skeleton/tracking/track3d.h"
+#include "tracking/track3d.h"
 
-namespace zed_tracking {
+namespace tracker {
 
     Track3D::Track3D(
             int id,
@@ -20,12 +20,12 @@ namespace zed_tracking {
 
         MAX_SIZE = 90; //XXX create a parameter!!!
         if (velocity_in_motion_term_) {
-            filter_ = new zed_tracking::KalmanFilter3D(period, position_variance, acceleration_variance, 6);
-            tmp_filter_ = new zed_tracking::KalmanFilter3D(period, position_variance, acceleration_variance, 6);
+            filter_ = new tracker::KalmanFilter3D(period, position_variance, acceleration_variance, 6);
+            tmp_filter_ = new tracker::KalmanFilter3D(period, position_variance, acceleration_variance, 6);
             mahalanobis_map6d_.resize(MAX_SIZE, MahalanobisParameters6d());
         } else {
-            filter_ = new zed_tracking::KalmanFilter3D(period, position_variance, acceleration_variance, 3);
-            tmp_filter_ = new zed_tracking::KalmanFilter3D(period, position_variance, acceleration_variance, 3);
+            filter_ = new tracker::KalmanFilter3D(period, position_variance, acceleration_variance, 3);
+            tmp_filter_ = new tracker::KalmanFilter3D(period, position_variance, acceleration_variance, 3);
             mahalanobis_map3d_.resize(MAX_SIZE, MahalanobisParameters3d());
         }
 
@@ -37,7 +37,7 @@ namespace zed_tracking {
     }
 
 void
-    Track3D::init(const zed_tracking::Track3D& old_track) {
+    Track3D::init(const tracker::Track3D& old_track) {
         double x, y, z;
         old_track.filter_->getState(x, y, z);
 
@@ -331,9 +331,9 @@ double
                 vz = mahalanobis_map6d_[vIndex].z;
             }
 
-            return zed_tracking::KalmanFilter3D::performMahalanobisDistance(x, y, z, vx, vy, vz, mahalanobis_map6d_[index]);
+            return tracker::KalmanFilter3D::performMahalanobisDistance(x, y, z, vx, vy, vz, mahalanobis_map6d_[index]);
         } else {
-            return zed_tracking::KalmanFilter3D::performMahalanobisDistance(x, y, z, mahalanobis_map3d_[index]);
+            return tracker::KalmanFilter3D::performMahalanobisDistance(x, y, z, mahalanobis_map3d_[index]);
         }
 
     }
@@ -379,4 +379,4 @@ void
         filter_->update();
     }
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/

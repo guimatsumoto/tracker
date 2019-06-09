@@ -16,8 +16,8 @@
  */
 
 // Common headers required for declarations
-#include "sl_core/ai/skeleton/bayes/bayesException.hpp" // exception types
-#include "sl_core/ai/skeleton/bayes/matSupSub.hpp"   // matrix support subsystem
+#include "bayes/bayesException.hpp" // exception types
+#include "bayes/matSupSub.hpp"   // matrix support subsystem
 
 /* Filter namespace */
 namespace Bayesian_filter {

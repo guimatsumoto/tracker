@@ -19,7 +19,7 @@
  *  most efficient with row operations. These products are used extensively so the default
  *  is to use row_major matrices
  */
-#include "sl_core/ai/ai_release.hpp"
+//#include "sl_core/ai/ai_release.hpp"
 
 /* Filter Matrix Namespace */
 namespace Bayesian_filter_matrix {

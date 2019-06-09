@@ -1,14 +1,12 @@
-/* -*- coding: utf-8 -*-
- * Inspired by nicolas.roussel@inria.fr
- */
+#ifndef TRACKER_ONE_EURO_FILTER_H
+#define TRACKER_ONE_EURO_FILTER_H
 
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
 #include <ctime>
-#include "sl_core/ai/ai_release.hpp"
 
-namespace zed_tracking {
+namespace tracker {
 
     class  LowPassFilter {
     public:
@@ -400,35 +398,6 @@ namespace zed_tracking {
         }
     };
 
-    // -----------------------------------------------------------------
-    /*
-    int
-    main(int argc, char **argv) {
-        randSeed();
+} /*namespace tracker*/
 
-        double duration = 10.0; // seconds
-
-        double frequency = 120; // Hz
-        double mincutoff = 1.0; // FIXME
-        double beta = 1.0;      // FIXME
-        double dcutoff = 1.0;   // this one should be ok
-
-        std::cout << "#SRC OneEuroFilter.cc" << std::endl
-            << "#CFG {'beta': " << beta << ", 'freq': " << frequency << ", 'dcutoff': " << dcutoff << ", 'mincutoff': " << mincutoff << "}" << std::endl
-            << "#LOG timestamp, signal, noisy, filtered" << std::endl;
-
-        OneEuroFilter f(frequency, mincutoff, beta, dcutoff);
-        for (double timestamp = 0.0; timestamp<duration; timestamp += 1.0 / frequency) {
-            double signal = sin(timestamp);
-            double noisy = signal + (unifRand() - 0.5) / 5.0;
-            double filtered = f.filter(noisy, timestamp);
-            std::cout << timestamp << ", "
-                << signal << ", "
-                << noisy << ", "
-                << filtered
-                << std::endl;
-        }
-
-        return 0;
-    }*/
-} /*namespace zed_tracking*/
+#endif /* TRACKER_ONE_EURO_FILTER_H */

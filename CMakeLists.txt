@@ -15,12 +15,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/)
 FILE(GLOB_RECURSE TRACKER_SRC "${SRC_FOLDER}/*.c*")
 FILE(GLOB_RECURSE TRACKER_HDR "${HDR_FOLDER}/*.h*")
 
-SET(TRACKER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/stream/RGBDStream.cpp
-			${CMAKE_CURRENT_SOURCE_DIR}/src/stream/DetectionStream.cpp
-			${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/GLViewer.cpp
-			${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp
-			${CMAKE_CURRENT_SOURCE_DIR}/src/Detector.cpp
-			${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+#SET(TRACKER_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/stream/RGBDStream.cpp
+#			${CMAKE_CURRENT_SOURCE_DIR}/src/stream/DetectionStream.cpp
+#            ${CMAKE_CURRENT_SOURCE_DIR}/src/stream/TimeStream.cpp
+#			${CMAKE_CURRENT_SOURCE_DIR}/src/viewer/GLViewer.cpp
+#			${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp
+#			${CMAKE_CURRENT_SOURCE_DIR}/src/Detector.cpp
+#			${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 
 
 # Add thread mutex
@@ -51,7 +52,8 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 link_directories(${CUDA_LIBRARY_DIRS})
 link_directories(${Eigen_LIBRARY_DIRS})
 
-add_executable(tracker ${TRACKER_HDR} ${TRACKER_SRC_FILES})
+#add_executable(tracker ${TRACKER_HDR} ${TRACKER_SRC_FILES})
+add_executable(tracker ${TRACKER_HDR} ${TRACKER_SRC})
 
 #set_target_properties(tracker PROPERTIES LINKER_LANGUAGE CXX)
 

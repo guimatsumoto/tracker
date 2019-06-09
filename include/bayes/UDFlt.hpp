@@ -11,7 +11,7 @@
 /*
  * UdU' Factorisation of covariance Filter Scheme.
  *  Implementation of a 'Square-root' linearised Kalman filter
- * 
+ *
  * Bierman's UD factorisatised update algorithm using Agee-Turner UdU' factorisation rank 1 update
  * Thornton's MWG-S factorisation predict algorithm
  * References
@@ -19,12 +19,12 @@
  * [2] "Kalman Filtering, Theory and Practice", Mohinder S. Grewal, Angus P. Andrews ISBN 0-13-211335-X
  *
  * A initial observation size may also be specified for efficiency.
- * 
+ *
  * The filter is operated by performing a
  *  predict, observe
  * cycle defined by the base class
  */
-#include "sl_core/ai/skeleton/bayes/bayesFlt.hpp"
+#include "bayes/bayesFlt.hpp"
 
 /* Filter namespace */
 namespace Bayesian_filter {

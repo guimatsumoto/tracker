@@ -9,9 +9,9 @@
 /*
  * Iterated Covariance Filter.
  */
-#include "sl_core/ai/skeleton/bayes/itrFlt.hpp"
-#include "sl_core/ai/skeleton/bayes/matSup.hpp"
-#include "sl_core/ai/skeleton/bayes/models.hpp"
+#include "bayes/itrFlt.hpp"
+#include "bayes/matSup.hpp"
+#include "bayes/models.hpp"
 
 /* Filter namespace */
 namespace Bayesian_filter {

@@ -1,20 +1,13 @@
-#ifndef TRACKING_MUNKRES_H_
-#define TRACKING_MUNKRES_H_
-
-#include "sl_core/ai/ai_release.hpp"
+#ifndef TRACKER_MUNKRES_H_
+#define TRACKER_MUNKRES_H_
 
 #include <iostream>
 #include <limits.h>
 #include <cmath>
 
-#if defined(LINKS_WITH_EXTERN_OPENCV)
 #include <opencv2/opencv.hpp>
-#else
-#include "sl_core/opencv/cv_wrapper.hpp"
-using namespace slutils;
-#endif
 
-namespace zed_tracking {
+namespace tracker {
 
     /** \brief Munkres solves Global Nearest Neighbor problem with the Hungarian (Munkres) algorithm
      *  Implementation of the algorithm described here: http://csclab.murraystate.edu/bob.pilgrim/445/munkres.html
@@ -98,6 +91,6 @@ namespace zed_tracking {
 
     };
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/
 
-#endif /* !defined(TRACKING_MUNKRES_H_) */
+#endif /* TRACKER_MUNKRES_H */

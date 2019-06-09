@@ -1,16 +1,14 @@
-#ifndef TRACKING_TRACK_H_
-#define TRACKING_TRACK_H_
-
-/*TODO: Check include dependencies*/
-#include "sl_core/ai/ai_release.hpp"
+#ifndef TRACKER_TRACK_H_
+#define TRACKER_TRACK_H_
 
 #include <Eigen/Eigen>
 #include <cmath>
-#include "sl_core/ai/skeleton/tracking/kalman_filter.h"
-#include "sl_core/ai/skeleton/bayes/bayesFlt.hpp"
-#include "sl_core/ai/skeleton/utils.hpp"
+#include "tracking/kalman_filter.h"
+#include "bayes/bayesFlt.hpp"
+#include "utils.hpp"
+#include "structures.hpp"
 
-namespace zed_tracking {
+namespace tracker {
 
     class  Track {
     public:
@@ -43,10 +41,10 @@ namespace zed_tracking {
         bool validated_;
 
         // Track's KalmanFilter
-        zed_tracking::KalmanFilter* filter_;
+        tracker::KalmanFilter* filter_;
 
         // Temporary KalmanFilter used for when a track is re-found
-        zed_tracking::KalmanFilter* tmp_filter_;
+        tracker::KalmanFilter* tmp_filter_;
 
         // First time a detections is associated to the track
         struct timeval first_time_detected_;
@@ -122,7 +120,7 @@ namespace zed_tracking {
 
         // Initialize track from old track
         virtual void
-        init(const zed_tracking::Track& old_track);
+        init(const tracker::Track& old_track);
 
         // Initialize track
         virtual void
@@ -202,11 +200,11 @@ namespace zed_tracking {
         virtual void
         setPositionVariance(double position_variance);
 
-        virtual sl::float3
+        virtual tracker::float3
         getSpeed();
 
     };
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/
 
-#endif /* TRACKING_TRACK_H_ */
+#endif /* TRACKER_TRACK_H_ */

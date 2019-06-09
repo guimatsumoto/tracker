@@ -1,32 +1,31 @@
-#ifndef TRACKING_TRACKER_3D_H_
-#define TRACKING_TRACKER_3D_H_
-#include "sl_core/ai/ai_release.hpp"
+#ifndef TRACKER_TRACKER_3D_H_
+#define TRACKER_TRACKER_3D_H_
 
-#include "sl_core/ai/skeleton/tracking/detection.h"
-#include "sl_core/ai/skeleton/tracking/track3d.h"
-#include "sl_core/ai/skeleton/tracking/munkres.h"
+#include "tracking/detection.h"
+#include "tracking/track3d.h"
+#include "tracking/munkres.h"
 
 /** \brief Tracker performs tracking-by-detection */
 /*TODO: Verify the use of a pose or detection class*/
 
-namespace zed_tracking {
+namespace tracker {
 
     class  Tracker3D {
     protected:
         /** \brief List of all active tracks */
-        std::list<zed_tracking::Track3D*> tracks_;
+        std::list<tracker::Track3D*> tracks_;
 
         /** \brief List of lost tracks */
-        std::list<zed_tracking::Track3D*> lost_tracks_;
+        std::list<tracker::Track3D*> lost_tracks_;
 
         /** \brief List of tracks with Status = NEW */
-        std::list<zed_tracking::Track3D*> new_tracks_;
+        std::list<tracker::Track3D*> new_tracks_;
 
         /** \brief List of current detections */
-        std::vector<zed_tracking::Detection> detections_;
+        std::vector<tracker::Detection> detections_;
 
         /** \brief List of current detections not associated to any track */
-        std::list<zed_tracking::Detection> unassociated_detections_;
+        std::list<tracker::Detection> unassociated_detections_;
 
         /** \brief Track ID counter */
         int tracks_counter_;
@@ -130,7 +129,7 @@ namespace zed_tracking {
          *
          */
         virtual void
-        newFrame(const std::vector<zed_tracking::Detection>& detections);
+        newFrame(const std::vector<tracker::Detection>& detections);
 
         /**
          * \brief Update the list of tracks according to the current set of detections.
@@ -230,6 +229,6 @@ namespace zed_tracking {
         setGateDistance(double gate_distance);
     };
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/
 
-#endif /* TRACKING_TRACKER_3D_H_ */
+#endif /* TRACKER_TRACKER_3D_H_ */

@@ -39,7 +39,7 @@
  *   become insignificant if Likelihoods have a large range. Resampling becomes ill conditioned
  *   for these samples.
  */
-#include "sl_core/ai/skeleton/bayes/bayesFlt.hpp"
+#include "bayes/bayesFlt.hpp"
 
 /* Filter namespace */
 namespace Bayesian_filter {

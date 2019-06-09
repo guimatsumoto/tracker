@@ -1,6 +1,6 @@
-#include "sl_core/ai/skeleton/tracking/person_track.h"
+#include "tracking/person_track.h"
 
-namespace zed_tracking {
+namespace tracker {
 
     int PersonTrack::count = 0;
 
@@ -11,8 +11,8 @@ namespace zed_tracking {
             const std::vector<Eigen::Vector4d>& joints) :
     Track(id, frame_id, position_variance, acceleration_variance, period,
     velocity_in_motion_term), all_joint_tracks_initialized_(false) {
-        joint_tracks_.resize(zed_tracking::PoseJoints::SIZE);
-        for (size_t i = 0; i < zed_tracking::PoseJoints::SIZE; ++i) {
+        joint_tracks_.resize(tracker::PoseJoints::SIZE);
+        for (size_t i = 0; i < tracker::PoseJoints::SIZE; ++i) {
             if (i == 3 or i == 6 or i == 10 or i == 13) {
                 // Knees + Elbows
                 joint_tracks_[i] = new Track3DEuro(id,
@@ -39,29 +39,28 @@ namespace zed_tracking {
         for (size_t i = 0; i < 8; i++)
             bbox_vertices_[i] = new OneEuroFilter3D(1. / period, 0.05, 1, 1);
 
-        // Skeleton Fitting
+        /*
         body = new slBody25KinChain();
-        for (unsigned i = 0; i < NUM_OF_DIMENSIONS; i++)
-        {
-            if (i < 25)
-            {
-                sl::float4 kp(NAN, NAN, NAN, NAN);
-                fitted_keypoints_.push_back(kp);
+        for (unsigned i = 0; i < NUM_OF_DIMENSIONS; i++){
+            if (i < 25){
+                tracker::float4 kp = {NAN, NAN, NAN, NAN};
+                fitte_keypoints_.push_back(kp);
             }
-            last_optim_state_[i] = 0;
+            last_optim_state_[i] = 0
         }
+        */
 
         debug_count_ = -1;
     }
 
     PersonTrack::~PersonTrack() {
         PersonTrack::count++;
-        delete body;
+        //delete body;
     }
 
     bool
     PersonTrack::anyNaNs(const std::vector<Eigen::Vector4d>& joints) {
-        for (size_t i = 0; i < zed_tracking::PoseJoints::SIZE; ++i) {
+        for (size_t i = 0; i < tracker::PoseJoints::SIZE; ++i) {
             if (std::isnan(joints[i](0)) or std::isnan(joints[i](1)) or std::isnan(joints[i](2)))
                 return true;
         }
@@ -77,8 +76,8 @@ namespace zed_tracking {
         bool any_nan = anyNaNs(joints);
         any_nan ? all_joint_tracks_initialized_ = false : all_joint_tracks_initialized_ = true;
 
-        sl::float3 coord_mins(NAN, NAN, NAN);
-        sl::float3 coord_maxs(NAN, NAN, NAN);
+        tracker::float3 coord_mins = {NAN, NAN, NAN};
+        tracker::float3 coord_maxs = {NAN, NAN, NAN};
         Eigen::Vector3d barycenter_eigen = getBarycenter();
 
         double time_in_sec = ((detection_time.tv_sec * (double) 1000000) + (detection_time.tv_usec)) / 1000000;
@@ -91,9 +90,6 @@ namespace zed_tracking {
 
         }
         raw_joints_tmp_ = joints;
-
-        // Skeleton Fitting
-        //fitToSkeleton();
 
     }
 
@@ -122,7 +118,7 @@ namespace zed_tracking {
                 detection_time, first_update);
 
         if (all_joint_tracks_initialized_) {
-            for (int i = 0, end = zed_tracking::PoseJoints::SIZE; i != end; ++i) {
+            for (int i = 0, end = tracker::PoseJoints::SIZE; i != end; ++i) {
                 const Eigen::Vector4d& bj = joints[i];
 
                 joint_tracks_[i]->update(bj(0), bj(1), bj(2), height,
@@ -183,14 +179,16 @@ namespace zed_tracking {
         }
         double time_in_sec = ((detection_time.tv_sec * (double) 1000000) + (detection_time.tv_usec)) / 1000000;
 
+        /*
         // Skeleton Fitting
         fitToSkeleton();
+        */
 
         // Calculate 3D bounding box
         //std::cout << "coords_mins: " << coord_mins.x << "," << coord_mins.y << "," << coord_mins.z << std::endl;
         //std::cout << "coords_maxs: " << coord_maxs.x << "," << coord_maxs.y << "," << coord_maxs.z << std::endl;
-        sl::float3 coord_mins(NAN, NAN, NAN);
-        sl::float3 coord_maxs(NAN, NAN, NAN);
+        tracker::float3 coord_mins = {NAN, NAN, NAN};
+        tracker::float3 coord_maxs = {NAN, NAN, NAN};
         Eigen::Vector3d barycenter_eigen = getBarycenter();
         double sx, sy, sz, c;
 
@@ -212,26 +210,26 @@ namespace zed_tracking {
                     sum != 0) {
                 coord_mins.x = std::isfinite(coord_mins.x) ? std::min(coord_mins.x, (float) sx) : sx;
                 coord_mins.y = std::isfinite(coord_mins.y) ? std::min(coord_mins.y, (float) sy) : sy;
-                coord_mins.z = std::isfinite(coord_mins.z) ? std::min(coord_mins.z, (float) sz) : sz;
+                coord_mins.c = std::isfinite(coord_mins.c) ? std::min(coord_mins.c, (float) sz) : sz;
 
                 coord_maxs.x = std::isfinite(coord_maxs.x) ? std::max(coord_maxs.x, (float) sx) : sx;
                 coord_maxs.y = std::isfinite(coord_maxs.y) ? std::max(coord_maxs.y, (float) sy) : sy;
-                coord_maxs.z = std::isfinite(coord_maxs.z) ? std::max(coord_maxs.z, (float) sz) : sz;
+                coord_maxs.c = std::isfinite(coord_maxs.c) ? std::max(coord_maxs.c, (float) sz) : sz;
             }
         }
 
         if (std::isfinite(coord_mins.x) && std::isfinite(coord_mins.y) &&
-                std::isfinite(coord_mins.z) && std::isfinite(coord_maxs.x) &&
-                std::isfinite(coord_maxs.y) && std::isfinite(coord_maxs.z)) {
-            bbox_vertices_[0]->update((double) coord_mins.x, (double) coord_maxs.y, (double) coord_maxs.z, time_in_sec, false);
-            bbox_vertices_[1]->update((double) coord_maxs.x, (double) coord_maxs.y, (double) coord_maxs.z, time_in_sec, false);
-            bbox_vertices_[2]->update((double) coord_mins.x, (double) coord_mins.y, (double) coord_maxs.z, time_in_sec, false);
-            bbox_vertices_[3]->update((double) coord_maxs.x, (double) coord_mins.y, (double) coord_maxs.z, time_in_sec, false);
+                std::isfinite(coord_mins.c) && std::isfinite(coord_maxs.x) &&
+                std::isfinite(coord_maxs.y) && std::isfinite(coord_maxs.c)) {
+            bbox_vertices_[0]->update((double) coord_mins.x, (double) coord_maxs.y, (double) coord_maxs.c, time_in_sec, false);
+            bbox_vertices_[1]->update((double) coord_maxs.x, (double) coord_maxs.y, (double) coord_maxs.c, time_in_sec, false);
+            bbox_vertices_[2]->update((double) coord_mins.x, (double) coord_mins.y, (double) coord_maxs.c, time_in_sec, false);
+            bbox_vertices_[3]->update((double) coord_maxs.x, (double) coord_mins.y, (double) coord_maxs.c, time_in_sec, false);
 
-            bbox_vertices_[4]->update((double) coord_mins.x, (double) coord_maxs.y, (double) coord_mins.z, time_in_sec, false);
-            bbox_vertices_[5]->update((double) coord_maxs.x, (double) coord_maxs.y, (double) coord_mins.z, time_in_sec, false);
-            bbox_vertices_[6]->update((double) coord_mins.x, (double) coord_mins.y, (double) coord_mins.z, time_in_sec, false);
-            bbox_vertices_[7]->update((double) coord_maxs.x, (double) coord_mins.y, (double) coord_mins.z, time_in_sec, false);
+            bbox_vertices_[4]->update((double) coord_mins.x, (double) coord_maxs.y, (double) coord_mins.c, time_in_sec, false);
+            bbox_vertices_[5]->update((double) coord_maxs.x, (double) coord_maxs.y, (double) coord_mins.c, time_in_sec, false);
+            bbox_vertices_[6]->update((double) coord_mins.x, (double) coord_mins.y, (double) coord_mins.c, time_in_sec, false);
+            bbox_vertices_[7]->update((double) coord_maxs.x, (double) coord_mins.y, (double) coord_mins.c, time_in_sec, false);
         }
         raw_joints_tmp_ = joints;
         debug_count_++;
@@ -243,7 +241,7 @@ namespace zed_tracking {
     }
 
     bool
-    PersonTrack::isValid(const std::vector<sl::float4>& joint)
+    PersonTrack::isValid(const std::vector<tracker::float4>& joint)
     {
         for (unsigned i  = 0; i < joint.size(); i++)
             if ( !std::isfinite(joint[i].x) or !std::isfinite(joint[i].y) or !std::isfinite(joint[i].z) )
@@ -253,7 +251,7 @@ namespace zed_tracking {
 
     //Return all VISIBLE or PARTIALLY OCCLUDED tracks
 
-    std::vector<zed_tracking::Track3DEuro*>
+    std::vector<tracker::Track3DEuro*>
     PersonTrack::getKeypoints() {
         return joint_tracks_;
     }
@@ -268,9 +266,9 @@ namespace zed_tracking {
 
     Eigen::Vector3d
     PersonTrack::getKP(int body_part_idx) {
-        std::vector<zed_tracking::Track3DEuro*>::iterator it = joint_tracks_.begin();
+        std::vector<tracker::Track3DEuro*>::iterator it = joint_tracks_.begin();
         std::advance(it, body_part_idx);
-        zed_tracking::Track3DEuro* t = *it;
+        tracker::Track3DEuro* t = *it;
         double x, y, z;
         t->getState(x, y, z);
         Eigen::Vector3d pos(x, y, z);
@@ -279,23 +277,23 @@ namespace zed_tracking {
 
     Eigen::Vector3d
     PersonTrack::getGazeDirection() {
-        std::vector<zed_tracking::Track3DEuro*>::iterator it = joint_tracks_.begin();
+        std::vector<tracker::Track3DEuro*>::iterator it = joint_tracks_.begin();
         std::advance(it, 1); // Getting to the neck point (NOT using the nose point)
-        zed_tracking::Track3DEuro* t = *it;
-        if (t->getVisibility() == zed_tracking::Track3DEuro::NOT_VISIBLE)
+        tracker::Track3DEuro* t = *it;
+        if (t->getVisibility() == tracker::Track3DEuro::NOT_VISIBLE)
             return Eigen::Vector3d(NAN, NAN, NAN);
         double x, y, z;
         t->getState(x, y, z);
         Eigen::Vector3d pos_nose(x, y, z); // May have the nose or neck coordinates, need to test
         std::advance(it, 13); // Getting to the REYE iterator
         t = *it;
-        if (t->getVisibility() == zed_tracking::Track3DEuro::NOT_VISIBLE)
+        if (t->getVisibility() == tracker::Track3DEuro::NOT_VISIBLE)
             return Eigen::Vector3d(NAN, NAN, NAN);
         t->getState(x, y, z);
         Eigen::Vector3d pos_reye(x, y, z);
         std::advance(it, 1); // Getting to the LEYE iterator
         t = *it;
-        if (t->getVisibility() == zed_tracking::Track3DEuro::NOT_VISIBLE)
+        if (t->getVisibility() == tracker::Track3DEuro::NOT_VISIBLE)
             return Eigen::Vector3d(NAN, NAN, NAN);
         t->getState(x, y, z);
         Eigen::Vector3d pos_leye(x, y, z);
@@ -312,14 +310,14 @@ namespace zed_tracking {
 
     Eigen::Vector3d
     PersonTrack::getBodyDirection() {
-        std::vector<zed_tracking::Track3DEuro*>::iterator it = joint_tracks_.begin();
+        std::vector<tracker::Track3DEuro*>::iterator it = joint_tracks_.begin();
         std::vector<Eigen::Vector3d> points;
         bool rs = true, ls = true, rh = true, lh = true;
         // Check RIGHT SHOULDER
         std::advance(it, 2);
-        zed_tracking::Track3DEuro* t = *it;
+        tracker::Track3DEuro* t = *it;
         int not_visible_count = 0;
-        if (t->getVisibility() == zed_tracking::Track3DEuro::NOT_VISIBLE) {
+        if (t->getVisibility() == tracker::Track3DEuro::NOT_VISIBLE) {
             not_visible_count++;
             rs = false;
         }
@@ -331,7 +329,7 @@ namespace zed_tracking {
         // Check LEFT SHOULDER
         std::advance(it, 3);
         t = *it;
-        if (t->getVisibility() == zed_tracking::Track3DEuro::NOT_VISIBLE) {
+        if (t->getVisibility() == tracker::Track3DEuro::NOT_VISIBLE) {
             if (not_visible_count > 0) {
                 return Eigen::Vector3d(NAN, NAN, NAN);
             } else {
@@ -346,7 +344,7 @@ namespace zed_tracking {
         // Check RIGHT HIP
         std::advance(it, 4); // Getting to the LEYE iterator
         t = *it;
-        if (t->getVisibility() == zed_tracking::Track3DEuro::NOT_VISIBLE) {
+        if (t->getVisibility() == tracker::Track3DEuro::NOT_VISIBLE) {
             if (not_visible_count > 0) {
                 return Eigen::Vector3d(NAN, NAN, NAN);
             } else {
@@ -361,7 +359,7 @@ namespace zed_tracking {
         // Check LEFT HIP
         std::advance(it, 3); // Getting to the LEYE iterator
         t = *it;
-        if (t->getVisibility() == zed_tracking::Track3DEuro::NOT_VISIBLE) {
+        if (t->getVisibility() == tracker::Track3DEuro::NOT_VISIBLE) {
             if (not_visible_count > 0) {
                 return Eigen::Vector3d(NAN, NAN, NAN);
             } else {
@@ -427,15 +425,15 @@ namespace zed_tracking {
         return boxLinks;
     }
 
-    std::vector<sl::float4>
+    std::vector<tracker::float4>
     PersonTrack::getJointsPosition() {
-        std::vector<sl::float4> all_kps;
-        for (std::vector<zed_tracking::Track3DEuro*>::iterator it = joint_tracks_.begin(), end = joint_tracks_.end(); it != end; it++) {
-            zed_tracking::Track3DEuro* kp = *it;
+        std::vector<tracker::float4> all_kps;
+        for (std::vector<tracker::Track3DEuro*>::iterator it = joint_tracks_.begin(), end = joint_tracks_.end(); it != end; it++) {
+            tracker::Track3DEuro* kp = *it;
             double x, y, z, confidence;
             kp->getState(x, y, z);
             confidence = kp->getLastDetectorConfidence();
-            sl::float4 kp_coords(x, y, z, confidence);
+            tracker::float4 kp_coords = {x, y, z, confidence};
             all_kps.push_back(kp_coords);
         }
         return all_kps;
@@ -446,8 +444,9 @@ namespace zed_tracking {
         Compute the joint angles -> rotation matrix from limb A to limb B,
         joined by the joint in question.
      */
-    std::vector<sl::Transform>
+    std::vector<Eigen::Affine3f>
     PersonTrack::getJointAngles() {
+        /*
         // 22 trios
         std::vector<int> joint_trios = {2, 3, 4, //RWRIST, RELBOW, RSHOULDER
             1, 2, 3, //RELBOW, RSHOULDER, NECK
@@ -472,12 +471,12 @@ namespace zed_tracking {
             13, 14, 20, //LKNEE, LANKLE, LSMALLTOE
             13, 14, 21 //LKNEE, LANKLE, LHEEL
         };
-        std::vector<sl::float4> joint_positions = getJointsPosition();
-        std::vector<sl::Transform> joint_angles;
+        std::vector<tracker::float4> joint_positions = getJointsPosition();
+        std::vector<Eigen::Affine3f> joint_angles;
         for (unsigned i = 0; i < joint_trios.size() / 3; i++) {
             // Compute the two limbs A and B
-            sl::float4 limbA = joint_positions[3 * i + 1] - joint_positions[3 * i];
-            sl::float4 limbB = joint_positions[3 * i + 2] - joint_positions[3 * i + 1];
+            tracker::float4 limbA = joint_positions[3 * i + 1] - joint_positions[3 * i];
+            tracker::float4 limbB = joint_positions[3 * i + 2] - joint_positions[3 * i + 1];
 
             // Unormalized vectors, passing to Eigen
             Eigen::Vector3d vectorA(limbA.x, limbA.y, limbA.z);
@@ -528,14 +527,20 @@ namespace zed_tracking {
         }
 
         return joint_angles;
+        */
+        std::vector<Eigen::Affine3f> return_angles;
+        return return_angles;
     }
 
-    std::vector<sl::float4>
+    /*
+    std::vector<tracker::float4>
     PersonTrack::getJointsFitted()
     {
         return fitted_keypoints_;
     }
+    */
 
+    /*
     void
     PersonTrack::fitToSkeleton()
     {
@@ -574,7 +579,7 @@ namespace zed_tracking {
         }
 
         // Optimize variable body parameters with Particle Swarm Optimization process
-        std::vector<sl::float4> kps = getJointsPosition();
+        std::vector<tracker::float4> kps = getJointsPosition();
         float keypoints[3*25];
         for (unsigned i = 0; i < 25; i++)
         {
@@ -652,9 +657,9 @@ namespace zed_tracking {
 
         // Retrieve keypoints positions
         std::vector<double> all_confs;
-        for (std::vector<zed_tracking::Track3DEuro*>::iterator it = joint_tracks_.begin(), end = joint_tracks_.end(); it != end; it++)
+        for (std::vector<tracker::Track3DEuro*>::iterator it = joint_tracks_.begin(), end = joint_tracks_.end(); it != end; it++)
         {
-            zed_tracking::Track3DEuro* kp = *it;
+            tracker::Track3DEuro* kp = *it;
             double confidence;
             confidence = kp->getLastDetectorConfidence();
             all_confs.push_back(confidence);
@@ -669,5 +674,6 @@ namespace zed_tracking {
         //printf("\n");
 
     }
+    */
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/

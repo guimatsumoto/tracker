@@ -15,7 +15,7 @@
 #include "stream/RGBDStream.hpp"
 #include "stream/DetectionStream.hpp"
 #include "viewer/GLViewer.hpp"
-//#include "tracking/person_tracker.h"
+#include "tracking/person_tracker.h"
 
 class Detector {
 	public:
@@ -24,17 +24,22 @@ class Detector {
 
 		void setCameraIntrinsics(float fx_, float fy_, float cx_, float cy_);
 
-		void trackOnDetections();
+		bool trackOnDetections(std::vector<Eigen::Vector3f> pose_keypoints,
+                               cv::Mat &depth_frame,
+                               timeval time,
+                               Eigen::Affine3f cam_pose = Eigen::Affine3f::Identity());
+
+        std::vector<tracker::PeoplePose> getTrackedPeople();
+
+        std::vector<Eigen::Vector4f> getDepthKeypoints();
 
         // emulateTracker is used to test the 3D viewer
         std::vector<tracker::PeoplePose> emulateTracker(std::vector<Eigen::Vector4f> &people);
 
         // Given a set of 2d points and an image, we estimate depth
+        // Is public for testing purposes
 		std::vector<Eigen::Vector4f> estimate_keypoints_depth(std::vector<Eigen::Vector3f> pose_keypoints, cv::Mat &depth_frame);
 
-
-		//void extractDepth();
-		//void track(cv::Mat &im);
 		void test();
 
 	private:
@@ -48,8 +53,8 @@ class Detector {
 		int current_frame = 0;
 
 		// TRACKER
-		//PersonTracker* tracker = NULL;
-		struct timeval detection_time;
+		tracker::PersonTracker* tracker = NULL;
+		timeval detection_time;
     	double min_confidence_initialization = 4.0; //4.0
     	double min_confidence_detections = -2.5; //-2.5
     	double rate = 15.0;
@@ -65,6 +70,14 @@ class Detector {
     	double sec_remain_new = 1.2; //1.2 0.8
     	int detections_to_validate = 3; //3
     	double voxel_size = 0.06; //0.06
+        bool tracker_init = false;
+
+        // LOCAL
+        cv::Mat current_depth;
+        uint64_t current_ts;
+        Eigen::Affine3f current_pose;
+
+        void init_tracker();
 
         std::vector<tracker::PeoplePose> pose_vector;
 

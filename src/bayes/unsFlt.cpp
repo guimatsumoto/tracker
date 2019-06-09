@@ -9,9 +9,9 @@
 /*
  * Unscented Filter.
  */
-#include "sl_core/ai/skeleton/bayes/unsFlt.hpp"
-#include "sl_core/ai/skeleton/bayes/matSup.hpp"
-#include "sl_core/ai/skeleton/bayes/models.hpp"
+#include "bayes/unsFlt.hpp"
+#include "bayes/matSup.hpp"
+#include "bayes/models.hpp"
 #include <cmath>
 
 

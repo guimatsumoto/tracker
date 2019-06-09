@@ -5,6 +5,7 @@
 #include "viewer/GLViewer.hpp"
 #include "stream/RGBDStream.hpp"
 #include "stream/DetectionStream.hpp"
+#include "stream/TimeStream.hpp"
 
 // Definition of depth camera intrinsics for depth extraction
 #define KTP_CAMERA_INTRINSICS_FX 525.0
@@ -23,7 +24,10 @@
 #define MAX_DISTANCE_LIMB 1
 
 // Define which dataset to use
-//#define USE_KTP_DATASET
+#define USE_KTP_DATASET
+
+// Enable tracker
+#define USE_TRACKER
 
 // Define GLViewer -> it has to be global (weird) as in GLUT things
 // only make sense if they are global
@@ -108,6 +112,7 @@ void tracker_run(Detector &d,
                  cv::Mat &depth_im){
 
     d = Detector();
+    TimeStream time_stream(30.f);
 #ifdef USE_KTP_DATASET
     d.setCameraIntrinsics(KTP_CAMERA_INTRINSICS_FX,
                 KTP_CAMERA_INTRINSICS_FY,
@@ -127,6 +132,7 @@ void tracker_run(Detector &d,
             continue;
         }
 
+#ifndef USE_TRACKER
         depth_kp = d.estimate_keypoints_depth(image_kp, depth_im);
 #if 0
         for (unsigned i = 0; i < depth_kp.size()/25; i++){
@@ -139,8 +145,13 @@ void tracker_run(Detector &d,
             }
         }
 #endif
-
         poses = d.emulateTracker(depth_kp);
+#else // #ifdef USE_TRACKER
+    // Not using cam pose, only gonna do it if there's time
+    d.trackOnDetections(image_kp, depth_im, time_stream.get_next());
+    depth_kp = d.getDepthKeypoints();
+    poses = d.getTrackedPeople();
+#endif
 
         has_tracked_poses = true;
     }

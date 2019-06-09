@@ -11,9 +11,9 @@
  *
  * Bootstrap filter (Sequential Importance Resampling).
  */
-#include "sl_core/ai/skeleton/bayes/SIRFlt.hpp"
-#include "sl_core/ai/skeleton/bayes/matSup.hpp"
-#include "sl_core/ai/skeleton/bayes/models.hpp"
+#include "bayes/SIRFlt.hpp"
+#include "bayes/matSup.hpp"
+#include "bayes/models.hpp"
 #include <algorithm>
 #include <iterator>
 #include <vector>

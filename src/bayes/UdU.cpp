@@ -20,8 +20,8 @@
  *  LD(LTriMatrix) format of LdL' factor 
  *   strict_lower_triangle(LD) = strict_lower_triangle(L), diagonal(LD) = d, strict_upper_triangle(LD) ignored or zeroed
  */
-#include "sl_core/ai/skeleton/bayes/bayesFlt.hpp"
-#include "sl_core/ai/skeleton/bayes/matSup.hpp"
+#include "bayes/bayesFlt.hpp"
+#include "bayes/matSup.hpp"
 #include <cassert>
 #include <cmath>
 

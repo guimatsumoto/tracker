@@ -22,7 +22,7 @@
  *  predict, observe
  * cycle defined by the base class
  */
-#include "sl_core/ai/skeleton/bayes/bayesFlt.hpp"
+#include "bayes/bayesFlt.hpp"
 
 /* Filter namespace */
 namespace Bayesian_filter {

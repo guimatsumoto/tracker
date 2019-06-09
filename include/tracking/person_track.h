@@ -1,24 +1,19 @@
-#ifndef TRACKING_PERSON_TRACK_H_
-#define TRACKING_PERSON_TRACK_H_
-
-#include "sl_core/ai/ai_release.hpp"
+#ifndef TRACKER_PERSON_TRACK_H_
+#define TRACKER_PERSON_TRACK_H_
 
 #include <Eigen/Eigen>
 #include <cmath>
-#include "sl_core/ai/skeleton/tracking/kalman_filter3d.h"
-#include "sl_core/ai/skeleton/bayes/bayesFlt.hpp"
-#include "sl_core/ai/skeleton/tracking/detection.h"
-#include "sl_core/ai/skeleton/tracking/track.h"
-#include "sl_core/ai/skeleton/tracking/track3d.h"
-#include "sl_core/ai/skeleton/tracking/track3deuro.h"
-#include "sl_core/ai/skeleton/tracking/tracker3d.h"
+#include "tracking/kalman_filter3d.h"
+#include "bayes/bayesFlt.hpp"
+#include "tracking/detection.h"
+#include "tracking/track.h"
+#include "tracking/track3d.h"
+#include "tracking/track3deuro.h"
+#include "tracking/tracker3d.h"
 #include <memory>
-#include "sl_core/ai/skeleton/tracking/pose.h"
+#include "tracking/pose.h"
 
-#include "sl_core/ai/skeleton/fitting/pso.h"
-#include "sl_core/ai/skeleton/fitting/tree.hpp"
-
-namespace zed_tracking {
+namespace tracker {
 
     /** \brief PersonTrack represents information about a track (or target) */
     class  PersonTrack : public Track {
@@ -27,28 +22,20 @@ namespace zed_tracking {
         isValid(const Eigen::Vector4d& joint);
 
         bool
-        isValid(const std::vector<sl::float4>& joint);
+        isValid(const std::vector<tracker::float4>& joint);
 
     protected:
-        std::vector<zed_tracking::Track3DEuro*> joint_tracks_;
+        std::vector<tracker::Track3DEuro*> joint_tracks_;
         std::vector<Eigen::Vector4d> raw_joints_tmp_;
-        std::vector<zed_tracking::OneEuroFilter3D*> bbox_vertices_;
+        std::vector<tracker::OneEuroFilter3D*> bbox_vertices_;
         bool all_joint_tracks_initialized_;
 
         static int count;
         int debug_count_;
 
         // Unfitted joints
-        std::vector<sl::float4>
+        std::vector<tracker::float4>
         getJointsPosition();
-
-        // Skeleton Fitting
-        std::vector<sl::float4> fitted_keypoints_; // Last fitted global positions
-        float last_optim_state_[NUM_OF_DIMENSIONS]; // Last optimisation state
-        slBody25KinChain *body;
-
-        void
-        fitToSkeleton();
 
     public:
 
@@ -87,11 +74,13 @@ namespace zed_tracking {
         bool
         areJointsInitialized();
 
-        std::vector<zed_tracking::Track3DEuro*>
+        std::vector<tracker::Track3DEuro*>
         getKeypoints();
 
-        std::vector<sl::float4>
+        /*
+        std::vector<tracker::float4>
         getJointsFitted();
+        */
 
         Eigen::Vector3d
         getBarycenter();
@@ -108,16 +97,16 @@ namespace zed_tracking {
         std::vector<Eigen::Vector3d>
         getBoundingBox();
 
-        std::vector<int> 
+        std::vector<int>
         getBoundingBoxLinks();
 
-        std::vector<sl::Transform>
+        std::vector<Eigen::Affine3f>
         getJointAngles();
 
         //friend std::ostream&
         //operator<< (std::ostream& ss, const PersonTrack& s);
     };
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/
 
-#endif /* TRACKING_PERSON_TRACK_H_ */
+#endif /* TRACKER_PERSON_TRACK_H_ */

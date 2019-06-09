@@ -1,13 +1,12 @@
-#ifndef TRACKING_TRACK_3D_EURO_H_
-#define TRACKING_TRACK_3D_EURO_H_
-#include "sl_core/ai/ai_release.hpp"
+#ifndef TRACKER_TRACK_3D_EURO_H_
+#define TRACKER_TRACK_3D_EURO_H_
 
 #include <Eigen/Eigen>
 #include <cmath>
-#include "sl_core/ai/skeleton/tracking/one_euro_filter.h"
-#include "sl_core/ai/skeleton/utils.hpp"
+#include "tracking/one_euro_filter.h"
+#include "utils.hpp"
 
-namespace zed_tracking {
+namespace tracker {
 
     /** \brief Track represents information about a track (or target) */
     class  Track3DEuro {
@@ -44,10 +43,10 @@ namespace zed_tracking {
         bool validated_;
 
         /** \brief Kalman filter associated to the track */
-        zed_tracking::OneEuroFilter3D* filter_;
+        tracker::OneEuroFilter3D* filter_;
 
         /** \brief Temporary copy of the Kalman filter associated to the track (used for recovery filter information when a track is re-found) */
-        zed_tracking::OneEuroFilter3D* tmp_filter_;
+        tracker::OneEuroFilter3D* tmp_filter_;
 
         /** \brief First time a detection is associated to the track */
         struct timeval first_time_detected_;
@@ -113,7 +112,7 @@ namespace zed_tracking {
 
         /** \brief Track initialization with an old track. */
         virtual void
-        init(const zed_tracking::Track3DEuro& old_track);
+        init(const tracker::Track3DEuro& old_track);
 
         /**
          * \brief Track initialization.
@@ -264,7 +263,7 @@ namespace zed_tracking {
 
     };
 
-} /*namespace zed_tracking*/
+} /*namespace tracker*/
 
-#endif /* TRACKING_TRACK_H_ */
+#endif /* TRACKER_TRACK_H_ */
 
