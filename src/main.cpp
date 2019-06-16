@@ -27,7 +27,7 @@
 #define USE_KTP_DATASET
 
 // Enable tracker
-#define USE_TRACKER
+//#define USE_TRACKER
 
 // Define GLViewer -> it has to be global (weird) as in GLUT things
 // only make sense if they are global
@@ -145,12 +145,23 @@ void tracker_run(Detector &d,
             }
         }
 #endif
-        poses = d.emulateTracker(depth_kp);
+    poses = d.emulateTracker(depth_kp);
 #else // #ifdef USE_TRACKER
     // Not using cam pose, only gonna do it if there's time
     d.trackOnDetections(image_kp, depth_im, time_stream.get_next());
     depth_kp = d.getDepthKeypoints();
     poses = d.getTrackedPeople();
+#if 0
+    for (unsigned i = 0; i < depth_kp.size()/25; i++){
+        printf("person %d\n", i);
+        for (unsigned part = 0; part < 25; part++){
+            printf("kp %d: (%f, %f, %f)\n", part,
+                                            depth_kp[25*i + part](0),
+                                            depth_kp[25*i + part](1),
+                                            depth_kp[25*i + part](2));
+        }
+    }
+#endif
 #endif
 
         has_tracked_poses = true;

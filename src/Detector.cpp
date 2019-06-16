@@ -123,7 +123,7 @@ bool Detector::trackOnDetections(std::vector<Eigen::Vector3f> pose_keypoints,
     // On the french thesis shape came from the cnn directly, here we
     // emulate it
     std::vector<int> shape = {(int)depth_keypoints.size()/25, 25, 0};
-    std::cout << shape[0] << ", " << shape[1] << ", " << shape[2] << std::endl;
+    //std::cout << shape[0] << ", " << shape[1] << ", " << shape[2] << std::endl;
     tracker->newFrame(depth_keypoints, shape, time);
     tracker->updateTracks();
 

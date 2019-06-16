@@ -13,6 +13,12 @@
 #include <GL/gl.h>
 #include <GL/glut.h>   /* OpenGL Utility Toolkit header */
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/ext.hpp>
+#include <glm/gtx/string_cast.hpp>
+
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>

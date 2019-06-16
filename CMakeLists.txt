@@ -37,12 +37,17 @@ find_package(CUDA REQUIRED)
 find_package(OpenGL)
 find_package(Eigen3 REQUIRED)
 
+#find_package(GLM REQUIRED)
+
 # Package includes
 include_directories(${GLEW_INCLUDE_DIRS})
 include_directories(${GLUT_INCLUDE_DIRS})
 include_directories(${GLUT_INCLUDE_DIR})
 include_directories(${CUDA_INCLUDE_DIRS})
 include_directories(${EIGEN3_INCLUDE_DIRS})
+
+find_path(GLM_PATH glm/glm.hpp)
+include_directories(${GLM_PATH})
 
 link_directories(${GLEW_LIBRARY_DIRS})
 #link_directories(${GLUT_LIBRARY_DIRS})

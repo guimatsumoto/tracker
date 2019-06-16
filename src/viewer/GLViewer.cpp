@@ -1078,6 +1078,14 @@ void CameraGL::setProjection(float horizontalFOV, float verticalFOV, float znear
     projection_(3, 2) = -1;
     projection_(2, 3) = -(2.f * zfar * znear) / (zfar - znear);
     projection_(3, 3) = 0;
+
+    std::cout << projection_.matrix() << std::endl;
+
+#if 1
+    glm::mat4 proj;
+    proj = glm::perspective(glm::radians(120.f), 1.f, 0.01f, 100.f);
+    std::cout << glm::to_string(proj) << std::endl;
+#endif
 }
 
 const Eigen::Affine3f& CameraGL::getViewProjectionMatrix() const {
