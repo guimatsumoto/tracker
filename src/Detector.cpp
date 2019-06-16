@@ -141,6 +141,9 @@ std::vector<Eigen::Vector4f> Detector::getDepthKeypoints(){
 }
 
 std::vector<Eigen::Vector4f> Detector::estimate_keypoints_depth(std::vector<Eigen::Vector3f> pose_keypoints, cv::Mat &depth_frame){
+#ifndef USE_KTP_DATASET
+    cv::Mat depth = swap_img_bytes(depth_frame);
+#endif
 	std::vector<Eigen::Vector4f> depth_keypoints;
 	float x, y, z;
 	if (pose_keypoints.size() > 1){
@@ -153,12 +156,21 @@ std::vector<Eigen::Vector4f> Detector::estimate_keypoints_depth(std::vector<Eige
                 kp(3) = 0.f;
             }else{
 			    // Trivial method
+#ifdef USE_KTP_DATASET
 			    z = (float)depth_frame.at<short>((int)pose_keypoints[i](1), (int)pose_keypoints[i](0))/1000;
+#else
+                z = 0.1236*tan(depth.at<short>((int)pose_keypoints[i](1), (int)pose_keypoints[i](0)) / 2842.5 + 1.1863);
+#endif
 			    // Stephane Magnenat's method
 			    //z = 0.1236*tan(depth_frame.at<short>((int)pose_keypoints[i](1), (int)pose_keypoints[i](0)) / 2842.5 + 1.1863);
+#ifdef USE_KTP_DATASET
 			    x = (pose_keypoints[i](0) - cx) * z / fx;
 			    y = (pose_keypoints[i](1) - cy) * z / fy;
-                if (x + y + z == 0){
+#else
+                y = -((pose_keypoints[i](0) - cx) * z / fx);
+			    x = (pose_keypoints[i](1) - cy) * z / fy;
+#endif
+                if ((x + y + z == 0) || (z < 0)){
                     kp(0) = NAN;
 			        kp(1) = NAN;
 			        kp(2) = NAN;

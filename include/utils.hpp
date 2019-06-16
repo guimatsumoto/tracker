@@ -29,4 +29,6 @@ inline double timeval_to_sec(timeval t){
     return (double) t.tv_sec + (double) (t.tv_usec / 1000000);
 }
 
+cv::Mat swap_img_bytes(cv::Mat& img);
+
 #endif // UTILS_H

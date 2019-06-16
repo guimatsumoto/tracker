@@ -12,3 +12,19 @@ std::vector<std::string> get_file_names(std::string dir){
         }
         return file_list;
 }
+
+cv::Mat swap_img_bytes(cv::Mat &img){
+    int len_byte = img.elemSize();
+    typedef char tmp_data_t[len_byte];
+    {
+        cv::Mat to_swap(img.rows, img.cols, CV_8UC(len_byte), img.data);
+        int dtype = img.type();
+        cv::Mat merged;
+        std::vector<cv::Mat> channels(len_byte);
+        cv::split(to_swap, channels);
+        std::reverse(channels.begin(), channels.end());
+        cv::merge(&channels[0], len_byte, merged);
+        merged.addref();
+        return cv::Mat(to_swap.rows, to_swap.cols, dtype, merged.data);
+    }
+}

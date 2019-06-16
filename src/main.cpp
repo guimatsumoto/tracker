@@ -23,12 +23,6 @@
 #define MAX_DISTANCE_CENTER 1.5
 #define MAX_DISTANCE_LIMB 1
 
-// Define which dataset to use
-#define USE_KTP_DATASET
-
-// Enable tracker
-//#define USE_TRACKER
-
 // Define GLViewer -> it has to be global (weird) as in GLUT things
 // only make sense if they are global
 GLViewer viewer;
@@ -134,7 +128,7 @@ void tracker_run(Detector &d,
 
 #ifndef USE_TRACKER
         depth_kp = d.estimate_keypoints_depth(image_kp, depth_im);
-#if 0
+#if 1
         for (unsigned i = 0; i < depth_kp.size()/25; i++){
             printf("person %d\n", i);
             for (unsigned part = 0; part < 25; part++){
@@ -151,7 +145,7 @@ void tracker_run(Detector &d,
     d.trackOnDetections(image_kp, depth_im, time_stream.get_next());
     depth_kp = d.getDepthKeypoints();
     poses = d.getTrackedPeople();
-#if 0
+#if 1
     for (unsigned i = 0; i < depth_kp.size()/25; i++){
         printf("person %d\n", i);
         for (unsigned part = 0; part < 25; part++){
@@ -162,6 +156,12 @@ void tracker_run(Detector &d,
         }
     }
 #endif
+#endif
+
+    has_rgbd_detection = false;
+
+#if 0
+        std::cout << "Fez track" << std::endl;
 #endif
 
         has_tracked_poses = true;
@@ -200,12 +200,14 @@ void render_run(std::vector<tracker::PeoplePose> &pose,
 
         viewer.update(po);
 
-
+#if 0
+        std::cout << "Render frame: " << current_frame << std::endl;
+#endif
         // Simulate 30 FPS
         //usleep(5000);
 
+        //has_rgbd_detection = false;
         has_tracked_poses = false;
-        has_rgbd_detection = false;
     }
 }
 
@@ -245,6 +247,10 @@ void stream_run(std::vector<Eigen::Vector3f> &image_kp,
         image_kp = detection_stream.get_next_detection();
 
         current_frame++;
+#if 0
+        std::cout << "Stream frame: " << current_frame << std::endl;
+#endif
+
 
         // Tell other threads that images and detection are ready;
         has_rgbd_detection = true;

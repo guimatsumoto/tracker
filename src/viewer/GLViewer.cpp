@@ -681,7 +681,7 @@ void GLViewer::initialize() {
 
     // Create the camera
     camera_ = CameraGL(Eigen::Vector3f(0, 0, 0), Eigen::Vector3f(0, 0, -1));
-    camera_.setOffsetFromPosition(Eigen::Vector3f(0, 0, 4));
+    camera_.setOffsetFromPosition(Eigen::Vector3f(0, 0, 0));
     //Eigen::Matrix3f cam_rot;
     // Get associated rotation matrix from euler angle (180, 0, 0)
     // Simulate Euler angle with AngleAxis - bora testar, sepa nao funciona...
@@ -803,6 +803,7 @@ void GLViewer::update() {
     }
 
     // Zoom of the camera
+#if 1
     if (mouseWheelPosition_ != 0) {
         float distance = Eigen::Vector3f(camera_.getOffsetFromPosition()).norm();
         if (mouseWheelPosition_ > 0 && distance > camera_.getZNear()) { // zoom
@@ -811,6 +812,16 @@ void GLViewer::update() {
             camera_.setOffsetFromPosition(camera_.getOffsetFromPosition() * MOUSE_DZ_SENSITIVITY);
         }
     }
+#else
+    if (mouseWheelPosition_ != 0) {
+        float distance = Eigen::Vector3f(camera_.getOffsetFromPosition()).norm();
+        if (mouseWheelPosition_ > 0 && distance > camera_.getZNear()) { // zoom
+            camera_.setOffsetFromPosition(camera_.getOffsetFromPosition() * MOUSE_UZ_SENSITIVITY);
+        } else if (distance < camera_.getZFar()) {// unzoom
+            camera_.setOffsetFromPosition(camera_.getOffsetFromPosition() * MOUSE_DZ_SENSITIVITY);
+        }
+    }
+#endif
 
     // Translation of the camera on its axis
     if (keyStates_['u'] == KEY_STATE::DOWN) {
@@ -1039,12 +1050,12 @@ CameraGL::CameraGL(Eigen::Vector3f position, Eigen::Vector3f direction, Eigen::V
     this->position_ = position;
     setDirection(direction, vertical);
 
-    offset_ = Eigen::Vector3f(0, 0, 0);
+    offset_ = Eigen::Vector3f(0, 0, 4);
     view_.setIdentity();
     updateView();
     //setProjection(60, 60, 0.01f, 100.f);
     //setProjection(160, 160, .01f, 100.f);
-    setProjection(120, 120, .01f, 100.f);
+    setProjection(130, 130, .01f, 100.f);
     updateVPMatrix();
     //printf("CameraGL::CameraGL()\n");
 }
@@ -1079,9 +1090,9 @@ void CameraGL::setProjection(float horizontalFOV, float verticalFOV, float znear
     projection_(2, 3) = -(2.f * zfar * znear) / (zfar - znear);
     projection_(3, 3) = 0;
 
+#if 0
     std::cout << projection_.matrix() << std::endl;
 
-#if 1
     glm::mat4 proj;
     proj = glm::perspective(glm::radians(120.f), 1.f, 0.01f, 100.f);
     std::cout << glm::to_string(proj) << std::endl;
@@ -1133,7 +1144,7 @@ void CameraGL::setPosition(const Eigen::Vector3f& p) {
 }
 
 void CameraGL::rotate(const Eigen::Quaternionf& rot) {
-    rotation_ = rot * rotation_;
+    rotation_ = (rot * rotation_).normalized();
     updateVectors();
 }
 
@@ -1142,7 +1153,7 @@ void CameraGL::rotate(const Eigen::Matrix3f& m) {
 }
 
 void CameraGL::setRotation(const Eigen::Quaternionf& rot) {
-    rotation_ = rot;
+    rotation_ = rot.normalized();
     updateVectors();
 }
 
