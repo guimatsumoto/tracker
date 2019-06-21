@@ -159,6 +159,7 @@ std::vector<Eigen::Vector4f> Detector::estimate_keypoints_depth(std::vector<Eige
 #ifdef USE_KTP_DATASET
 			    z = (float)depth_frame.at<short>((int)pose_keypoints[i](1), (int)pose_keypoints[i](0))/1000;
 #else
+                //z = (float)depth_frame.at<short>((int)pose_keypoints[i](1), (int)pose_keypoints[i](0))/1000;
                 z = 0.1236*tan(depth.at<short>((int)pose_keypoints[i](1), (int)pose_keypoints[i](0)) / 2842.5 + 1.1863);
 #endif
 			    // Stephane Magnenat's method

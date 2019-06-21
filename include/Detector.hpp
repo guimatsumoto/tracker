@@ -17,9 +17,9 @@
 #include "viewer/GLViewer.hpp"
 #include "tracking/person_tracker.h"
 
-#define USE_KTP_DATASET
+//#define USE_KTP_DATASET
 
-#define USE_TRACKER
+//#define USE_TRACKER
 
 class Detector {
 	public:

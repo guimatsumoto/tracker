@@ -1,5 +1,6 @@
 #include <thread>
 #include <atomic>
+#include <iostream>
 
 #include "Detector.hpp"
 #include "viewer/GLViewer.hpp"
@@ -22,6 +23,8 @@
 #define RENDER_DEPTH true
 #define MAX_DISTANCE_CENTER 1.5
 #define MAX_DISTANCE_LIMB 1
+
+#define RUN_DEBUG
 
 // Define GLViewer -> it has to be global (weird) as in GLUT things
 // only make sense if they are global
@@ -121,14 +124,12 @@ void tracker_run(Detector &d,
 
     while (!quit){
 
-        if (!has_rgbd_detection){
+        while (!has_rgbd_detection)
             usleep(500);
-            continue;
-        }
 
 #ifndef USE_TRACKER
         depth_kp = d.estimate_keypoints_depth(image_kp, depth_im);
-#if 1
+#if 0
         for (unsigned i = 0; i < depth_kp.size()/25; i++){
             printf("person %d\n", i);
             for (unsigned part = 0; part < 25; part++){
@@ -145,7 +146,7 @@ void tracker_run(Detector &d,
     d.trackOnDetections(image_kp, depth_im, time_stream.get_next());
     depth_kp = d.getDepthKeypoints();
     poses = d.getTrackedPeople();
-#if 1
+#if 0
     for (unsigned i = 0; i < depth_kp.size()/25; i++){
         printf("person %d\n", i);
         for (unsigned part = 0; part < 25; part++){
@@ -158,7 +159,7 @@ void tracker_run(Detector &d,
 #endif
 #endif
 
-    has_rgbd_detection = false;
+        //has_rgbd_detection = false;
 
 #if 0
         std::cout << "Fez track" << std::endl;
@@ -175,10 +176,8 @@ void render_run(std::vector<tracker::PeoplePose> &pose,
                 cv::Mat &depth_im){
     while (!quit){
 
-        if (!has_tracked_poses){
+        while (!has_tracked_poses)
             usleep(500);
-            continue;
-        }
 
  	    fill_people_object_for_opengl(pose, po);
         //fill_test_cube(po);
@@ -194,8 +193,14 @@ void render_run(std::vector<tracker::PeoplePose> &pose,
             cv::moveWindow("Depth", 120, 45);
         }
 
+        int key = 0;
+
         if (RENDER_RGB || RENDER_DEPTH){
+#ifdef RUN_DEBUG
+            key = cv::waitKey(0);
+#else
             cv::waitKey(30);
+#endif
         }
 
         viewer.update(po);
@@ -206,7 +211,7 @@ void render_run(std::vector<tracker::PeoplePose> &pose,
         // Simulate 30 FPS
         //usleep(5000);
 
-        //has_rgbd_detection = false;
+        has_rgbd_detection = false;
         has_tracked_poses = false;
     }
 }
